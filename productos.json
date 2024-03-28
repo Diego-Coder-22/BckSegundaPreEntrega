@@ -1,0 +1,35 @@
+[
+	{
+		"title": "Kimono",
+		"brand": "Kings",
+		"description": "Kimono Kingz The One Junior Azul",
+		"price": 69,
+		"stock": 25,
+		"category": "Kids",
+		"image": "imagen_kimono_the_one_junior_azul.webp ",
+		"_id": "6605ae41a8c119f9f958dd88",
+		"__v": 0
+	},
+	{
+		"title": "Kimono",
+		"brand": "Kingz",
+		"description": "Kimono Kingz The One Junior Blanco",
+		"price": 79,
+		"stock": 15,
+		"category": "Kids",
+		"image": "imagen_kimono_the_one_junior_blanco.webp",
+		"_id": "6605ae82a8c119f9f958dd8a",
+		"__v": 0
+	},
+	{
+		"title": "Kimono",
+		"brand": "Kings",
+		"description": "Kimono Kingz The One Adulto Blanco",
+		"price": 89,
+		"stock": 10,
+		"category": "Adulto",
+		"image": "imagen_kimono_the_one_adulto_blanco.webp",
+		"_id": "6605b1c4ea51f11ea6f87eb4",
+		"__v": 0
+	}
+]
