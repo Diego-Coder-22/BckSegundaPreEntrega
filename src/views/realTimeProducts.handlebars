@@ -1,5 +1,7 @@
 <h1 class="text-center">Productos en tiempo real</h1>
 
+<!-- Boton para ir al carrito <a href="/api/carts/{{cartId}}" class="btn btn-primary">Ir al carrito</a> -->
+
 <div class="container mt-5">
     <div class="row">
         <div class="col-md-6 offset-md-3">
@@ -11,7 +13,8 @@
                     <input type="text" class="form-control" name="brand" id="brand" placeholder="Marca" required>
                 </div>
                 <div class="mb-3">
-                    <textarea class="form-control" name="description" id="description" placeholder="Descripción" required></textarea>
+                    <textarea class="form-control" name="description" id="description" placeholder="Descripción"
+                        required></textarea>
                 </div>
                 <div class="mb-3">
                     <input type="number" class="form-control" name="price" id="price" placeholder="Precio" required>
@@ -21,9 +24,10 @@
                 </div>
                 <div class="mb-3">
                     <select class="form-select" name="category" id="category" required>
-                        <option value="" disabled selected>Seleccione una Categoría</option>
-                        <option value="Adulto">Adulto</option>
-                        <option value="Kids">Kids</option>
+                        <option value="" disabled selected>Seleccione una categoría</option>
+                        <option value="tecnologia">Tecnología</option>
+                        <option value="libros">Libros</option>
+                        <option value="ropa">Ropa</option>
                     </select>
                 </div>
                 <div class="mb-3">
@@ -42,8 +46,9 @@
     <label for="category">Filtrar por categoría:</label>
     <select name="category" id="category">
         <option value="">Todas las categorías</option>
-        <option value="Adulto">Adulto</option>
-        <option value="Kids">Kids</option>
+        <option value="tecnologia">Tecnología</option>
+        <option value="libros">Libros</option>
+        <option value="ropa">Ropa</option>
     </select>
     <button type="submit">Filtrar</button>
 </form>
@@ -57,7 +62,7 @@
 
 <div class="container mt-5">
     <div class="row" id="productList">
-        {{#each products}}
+        {{#each Products}}
         <div class="col-md-4 mb-4">
             <div class="card">
                 <img src="/img/{{this.image}}" class="card-img-top img-fluid" alt="{{this.title}}"
@@ -66,7 +71,7 @@
                     <h5 class="card-title">{{this.title}}</h5>
                     <p class="card-text">{{this.brand}}</p>
                     <p class="card-text">{{this.description}}</p>
-                    <p class="card-text">Precio: {{this.price}} €</p>
+                    <p class="card-text">Precio: ${{this.price}}</p>
                     <p class="card-text">Stock: {{this.stock}}</p>
                     <p class="card-text">Categoría: {{this.category}}</p>
                     <a href="http://localhost:8080/api/products/{{this._id}}" class="btn btn-primary">Ver detalles</a>

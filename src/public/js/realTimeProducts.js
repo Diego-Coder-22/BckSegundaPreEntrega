@@ -50,7 +50,7 @@ async function renderProducts(products) {
                 <h5 class="card-title">${products.title}</h5>
                 <p class="card-text">${products.brand}</p>
                 <p class="card-text">${products.description}</p>
-                <p class="card-text">Precio: ${products.price}€</p>
+                <p class="card-text">Precio: $${products.price}</p>
                 <p class="card-text">Stock: ${products.stock}</p>
                 <p class="card-text">Categoría: ${products.category}</p>
                 <button class="btn btn-danger delete-btn" data-product-id="${products._id}">Eliminar Producto</button>

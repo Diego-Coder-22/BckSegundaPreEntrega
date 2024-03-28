@@ -1,11 +1,6 @@
 import mongoose from "mongoose";
 
 const cartSchema = new mongoose.Schema({
-    quantity: {
-        type: Number,
-        required: true,
-        min: 1,
-    },
     stock: Number,
     total: Number,
     country: String,
@@ -20,10 +15,17 @@ const cartSchema = new mongoose.Schema({
         type: Date,
         default: Date.now,
     },
-    product: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Product'
-    },
+    products: [
+        {
+            product: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Product'
+            },
+            productQuantity: Number,
+            productPrice: Number,
+            productTotal: Number,
+        }
+    ],
 });
 
 const Cart = mongoose.model("Cart", cartSchema);

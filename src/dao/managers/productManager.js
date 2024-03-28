@@ -71,7 +71,7 @@ class productManager {
             } = req.body;
 
             if (!title || !description || !code || !price || !stock || !category) {
-                return res.status(400).json({ error: "Faltan datos requeridos" });
+                return res.status(400).json({ error: "Faltan campos requeridos" });
             }
 
             let productos = readJsonFile(jsonFilePath);
@@ -92,7 +92,7 @@ class productManager {
 
             writeJsonFile(jsonFilePath, productos);
 
-            res.status(201).json({ message: "Producto agregado con exito", product: newProduct });
+            res.status(201).json({ message: "Producto agregado exitosamente", product: newProduct });
         } catch (error) {
             res.status(500).json({ error: "Internal Server Error" });
         }
@@ -149,7 +149,7 @@ class productManager {
 
             writeJsonFile(jsonFilePath, productos);
 
-            res.json({ message: "Producto eliminado con exito" });
+            res.json({ message: "Producto eliminado exitosamente" });
         } catch (error) {
             res.status(500).json({ error: "Internal Server Error" });
         }

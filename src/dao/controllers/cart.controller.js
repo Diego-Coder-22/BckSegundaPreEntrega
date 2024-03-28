@@ -7,13 +7,22 @@ const cartController = {
 
     try {
       // Intentar encontrar el carrito en la base de datos por su ID
-      const cart = await Cart.findById(cartId);
+      const cart = await Cart.findById(cartId).populate({
+        path: 'products',
+        model: 'Product'
+      }).lean();
 
       if (!cart) {
         return res.status(404).json({ error: "Carrito no encontrado" });
       }
 
-      return res.json(cart);
+      if (req.accepts("html")) {
+        // Renderizar el archivo Handlebars
+        return res.render("cart", { cart: cart });
+      } else {
+        // Enviar respuesta JSON si no se acepta HTML
+        return res.json(cart);
+      }
     } catch (error) {
       console.error("Error al obtener el carrito por ID:", error);
       return res.status(500).json({ error: "Error en la base de datos", details: error.message });
@@ -67,7 +76,7 @@ const cartController = {
     }
   },
 
-
+  /*
   buyCart: async (req, res) => {
     const { pid, country, state, city, street, postal_code, phone, card_bank, security_number, quantity } = req.body;
     const cartId = req.params.cid;
@@ -117,7 +126,7 @@ const cartController = {
       return res.status(500).json({ error: "Error en la base de datos", details: err.message });
     }
   },
-
+  */
 
   updateProductQuantityInCart: async (req, res) => {
     const { pid } = req.params;

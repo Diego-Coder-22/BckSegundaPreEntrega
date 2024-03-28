@@ -19,7 +19,8 @@ app.use(express.json());
 //app.use("/api/products", productRouter);
 //app.use("/api/carts", cartRouter);
 
-mongoose.connect(`mongodb+srv://diegocodeidea:uu5qyW7bS4FGpx1I@cluster0.70gqwqq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`);
+mongoose.connect(`mongodb+srv://diegocodeidea:uu5qyW7bS4FGpx1I@cluster0.70gqwqq.mongodb.net/`,{
+});
 
 const db = mongoose.connection;
 
@@ -47,14 +48,14 @@ const PORT = 8080;
 
 // Servidor HTTP
 httpServer.listen(PORT, () => {
-    console.log("Servidor conectado");
+    console.log("Servidor conectado!!");
 });
 
 // Servidor WebSocket
 const io = new Server(httpServer);
 
 io.on('connection', socket => {
-    console.log("Nuevo cliente conectado");
+    console.log("Nuevo cliente conectado!!");
 
     socket.on("deleteProduct", (deleteProductId) => {
         console.log("Producto borrado:", deleteProductId);

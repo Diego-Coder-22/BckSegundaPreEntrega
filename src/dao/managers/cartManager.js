@@ -5,22 +5,22 @@ const jsonFilePath = getCartFilePath();
 
 // Función para leer datos del archivo JSON
 const readJsonFile = () => {
-    try {
+  try {
     const jsonData = fs.readFileSync(jsonFilePath);
     return jsonData.length > 0 ? JSON.parse(jsonData) : [];
-    } catch (error) {
+  } catch (error) {
     console.error("Error al leer el archivo JSON:", error);
     return [];
-    }
+  }
 };
 
 // Función para escribir datos en el archivo JSON
 const writeJsonFile = (data) => {
-    try {
+  try {
     fs.writeFileSync(jsonFilePath, JSON.stringify(data, null, 2));
-    } catch (error) {
+  } catch (error) {
     console.error("Error al escribir en el archivo JSON:", error);
-    }
+  }
 };
 
 
@@ -40,7 +40,7 @@ class cartManager {
             
             writeJsonFile(jsonFilePath, carritos);
 
-            res.status(201).json({ message: "Carrito creado con exito", cart: newCart });
+            res.status(201).json({ message: "Carrito creado exitosamente", cart: newCart });
         } catch (error) {
             console.error("Error al crear el carrito:", error);
             res.status(500).json({ error: "Internal Server Error" });
@@ -104,7 +104,7 @@ class cartManager {
 
             writeJsonFile(jsonFilePath, carritos);
 
-            res.json({ message: "Producto agregado al carrito", cart: carritos[cartIndex] });
+            res.json({ message: "Producto agregado al carrito exitosamente", cart: carritos[cartIndex] });
         } catch (error) {
             res.status(500).json({ error: "Internal Server Error" });
         }
