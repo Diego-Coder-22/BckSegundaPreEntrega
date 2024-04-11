@@ -15,10 +15,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 .then(response => {
                     if (response.ok) {
                         // Si la respuesta es exitosa, redirigir al usuario al inicio
-                        console.log("Inicio de sesión exitoso!")
+                        console.log("Inicio de sesión exitoso")
                     } else {
                         // Si la respuesta no es exitosa, mostrar un mensaje de error
-                        errorMessage.textContent = 'Email o contraseña incorrectos. Por favor, inténtalo de nuevo.';
+                        errorMessage.textContent = 'Email o contraseña incorrectos. Ingrese Valor Correcto';
                         errorMessage.style.display = 'block';
                     }
                 })
