@@ -29,6 +29,19 @@ function handleAddToCart(event) {
         });
 }
 
+const goToCartBtn = document.getElementById('goToCartBtn');
+const cartForm = document.getElementById('cartForm');
+
+// Agregar un evento de clic al botón
+goToCartBtn.addEventListener('click', () => {
+    // Obtener el valor seleccionado en el select
+    const selectedCartId = document.getElementById('cart').value;
+    // Construir la URL del carrito utilizando el ID seleccionado
+    const cartUrl = `http://localhost:8080/api/carts/${selectedCartId}`;
+    // Redireccionar al usuario a la URL del carrito
+    window.location.href = cartUrl;
+});
+
 
 // Agregar un event listener para el evento click en el contenedor productList
 document.getElementById('productList').addEventListener('click', handleAddToCart);
@@ -53,7 +66,9 @@ async function renderProducts(products) {
                 <p class="card-text">Precio: $${products.price}</p>
                 <p class="card-text">Stock: ${products.stock}</p>
                 <p class="card-text">Categoría: ${products.category}</p>
-                <button class="btn btn-danger delete-btn" data-product-id="${products._id}">Eliminar Producto</button>
+                <a href="http://localhost:8080/api/products/{{this._id}}" class="btn btn-primary">Ver detalles</a>
+                <button class="btn btn-danger delete-btn" data-product-id="{{this._id}}">Eliminar Producto</button>
+                <button class="btn btn-success cart-btn" data-product-id="{{this._id}}">Agregar al carrito</button> 
             </div>
         </div>`;
     productList.appendChild(productElement);

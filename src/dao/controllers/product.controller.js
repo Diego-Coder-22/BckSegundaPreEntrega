@@ -1,12 +1,16 @@
-import mongoose from "mongoose";
 import Product from "../models/product.model.js";
+import Cart from "../models/cart.model.js";
 
 const productController = {
     getProducts: async (req, res) => {
         const { category, brand, sort } = req.query;
         let currentPage = req.query.page || 1;
+        const user = req.session.user;
+        const isAuthenticated = req.session.isAuthenticated;
 
         try {
+            const carts = await Cart.find({}).lean();
+
             let query = {};
 
             if (category) {
@@ -38,7 +42,9 @@ const productController = {
     },
 
     getProductDetail: async (req, res) => {
-        const productId = req.params.id;
+        const productId = req.params.pid;
+        const user = req.session.user;
+        const isAuthenticated = req.session.isAuthenticated;
 
         try {
             const productDetail = await Product.findOne({ _id: productId }).lean();
@@ -55,25 +61,50 @@ const productController = {
         }
     },
 
-    /* Metodos para proximo desafio
-    getProductByCategory: async (req, res) => {
-        const category = req.params.category
+    getProductCategory: async (req, res) => {
+        const category = req.params.category;
+        const { brand, sort } = req.query;
+        let currentPage = req.query.page || 1;
+        const user = req.session.user;
+        const isAuthenticated = req.session.isAuthenticated;
 
         try {
-            const productByCategory = await Product.find({category}).lean();
+            const options = {
+                page: currentPage,
+                limit: 10,
+                sort: { price: sort === 'asc' ? 1 : -1 }
+            };
 
-            if (req.accepts("html")) {
-                return res.render("category", {Category: productByCategory});
+            let query = { category };
+
+            if (brand) {
+                query.brand = brand;
             }
-            
-            res.json(productByCategory);
-        }
-        catch (error) {
-            console.error("Error al buscar la categoria:", err);
+
+            // Paginar los productos de la categoría
+            const filter = await Product.paginate(query, options);
+            const filterDoc = filter.docs.map(product => product.toObject());
+
+            if (req.accepts('html')) {
+                return res.render('category', {
+                    Category: filterDoc,
+                    Query: filter,
+                    user,
+                    isAuthenticated,
+                });
+            }
+
+            res.json({
+                Category: filterDoc,
+                Query: filter,
+                user,
+                isAuthenticated,
+            });
+        } catch (err) {
+            console.error("Error al ver la categoria:", err);
             return res.status(500).json({ error: "Error en la base de datos", details: err.message });
         }
     },
-    */
 
     addProduct: async (req, res) => {
         const { title, brand, description, price, stock, category } = req.body;
