@@ -66,9 +66,9 @@ async function renderProducts(products) {
                 <p class="card-text">Precio: $${products.price}</p>
                 <p class="card-text">Stock: ${products.stock}</p>
                 <p class="card-text">Categoría: ${products.category}</p>
-                <a href="http://localhost:8080/api/products/{{this._id}}" class="btn btn-primary">Ver detalles</a>
-                <button class="btn btn-danger delete-btn" data-product-id="{{this._id}}">Eliminar Producto</button>
-                <button class="btn btn-success cart-btn" data-product-id="{{this._id}}">Agregar al carrito</button> 
+                <a href="http://localhost:8080/api/products/${products._id}" class="btn btn-primary">Ver detalles</a>
+                <button class="btn btn-danger delete-btn" data-product-id=${products._id}>Eliminar Producto</button>
+                <button class="btn btn-success cart-btn" data-product-id=${products._id}>Agregar al carrito</button> 
             </div>
         </div>`;
     productList.appendChild(productElement);

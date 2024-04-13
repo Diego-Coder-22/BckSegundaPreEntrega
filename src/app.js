@@ -30,17 +30,13 @@ app.use(cookieParser());
 // Middleware para usar el session para autenticaciones de usuarios
 app.use(session({
     store: MongoStore.create({
-        mongoUrl: `mongodb+srv://gonza:Coder2001@ecommerce.salixhx.mongodb.net/`,
+        mongoUrl: `mongodb+srv://diegocodeidea:uu5qyW7bS4FGpx1I@cluster0.70gqwqq.mongodb.net/`,
         ttl: 15,
     }),
     secret: "secret_key",
     resave: false,
     saveUninitialized: false,
 }))
-
-// Rutas para productos y carritos
-//app.use("/api/products", productRouter);
-//app.use("/api/carts", cartRouter);
 
 mongoose.connect(`mongodb+srv://diegocodeidea:uu5qyW7bS4FGpx1I@cluster0.70gqwqq.mongodb.net/`,{
 });

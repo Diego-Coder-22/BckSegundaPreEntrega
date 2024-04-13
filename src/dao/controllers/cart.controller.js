@@ -48,87 +48,39 @@ const cartController = {
       }
 
       // Verificar si ya existe un carrito para el usuario
-      let cart = await Cart.findOne({});
+      let cart = await Cart.findOne({ user: req.session.user });
 
       // Si no hay un carrito existente, crear uno nuevo
       if (!cart) {
         cart = new Cart({
-          items: [],
+          user: req.session.user,
+          products: [],
+          total: 0
         });
       }
 
-      // Crear un nuevo elemento de carrito
-      const cartItem = new Cart({
-        products: [{
-          product: productId,
-          productQuantity: 1,
-          productPrice: product.price,
-          productTotal: product.price * 1,
-        }],
-        total: product.price,
-      });
+     // Crear un nuevo elemento de carrito
+      const cartItem = {
+        product: productId,
+        productQuantity: 1,
+        productPrice: product.price,
+        productTotal: product.price * 1,
+    };
+    // Agregar el nuevo elemento de carrito a la lista de productos del carrito
+    cart.products.push(cartItem);
 
-      // Guardar el nuevo elemento de carrito en la base de datos
-      const savedCartItem = await cartItem.save();
+    // Calcular el nuevo total del carrito sumando el precio del producto
+    cart.total += product.price;
 
-      return res.json({ message: "Producto agregado al carrito correctamente", cartItemId: savedCartItem._id });
+      // Guardar el carrito en la base de datos
+      await cart.save();
+
+      return res.json({ message: "Producto agregado al carrito correctamente", cartItemId: cartItem._id });
     } catch (error) {
       console.error('Error:', error);
       return res.status(500).json({ error: "Error en la base de datos", details: error.message });
     }
   },
-
-  /*
-  buyCart: async (req, res) => {
-    const { pid, country, state, city, street, postal_code, phone, card_bank, security_number, quantity } = req.body;
-    const cartId = req.params.cid;
-
-    try {
-      const product = await Product.findById(pid).lean();
-
-      if (!product) {
-        return res.status(404).json({ error: "Producto no encontrado" });
-      }
-
-      if (product.stock < quantity) {
-        return res.status(400).json({ error: "Cantidad solicitada superior al stock disponible" });
-      }
-
-      product.stock -= quantity;
-      await product.save();
-
-      // Obtener el carrito existente por su ID
-      const cart = await Cart.findById(cartId).populate({
-        path: 'products',
-        model: 'Product',
-      });
-
-      if (!cart) {
-        return res.status(404).json({ error: "Carrito no encontrado" });
-      }
-
-      // Agregar detalles de la compra al carrito existente
-      cart.products = pid;
-      cart.quantity = quantity;
-      cart.country = country;
-      cart.state = state;
-      cart.city = city;
-      cart.street = street;
-      cart.postal_code = postal_code;
-      cart.phone = phone;
-      cart.card_Bank = card_bank;
-      cart.security_Number = security_number;
-      cart.total = product.productPrice * quantity;
-
-      cart.products.push({ product: pid, productQuantity: quantity })
-      await cart.save();
-
-      return res.json({ message: "Compra exitosa, carrito actualizado", cart });
-    } catch (err) {
-      return res.status(500).json({ error: "Error en la base de datos", details: err.message });
-    }
-  },
-  */
 
   updateCart: async (req, res) => {
     const cartId = req.params.cid;

@@ -35,9 +35,9 @@ const productController = {
             }
 
             res.json({ Products: products });
-        } catch (err) {
-            console.error('Error:', err);
-            return res.status(500).json({ error: "Error en la base de datos", details: err.message });
+        } catch (error) {
+            console.error('Error:', error);
+            return res.status(500).json({ error: "Error en la base de datos", details: error.message });
         }
     },
 
@@ -56,8 +56,8 @@ const productController = {
             res.json(productDetail);
         }
         catch (error) {
-            console.error("Error al ver los detalles:", err);
-            return res.status(500).json({ error: "Error en la base de datos", details: err.message });
+            console.error("Error al ver los detalles:",error);
+            return res.status(500).json({ error: "Error en la base de datos", details: error.message });
         }
     },
 
@@ -100,9 +100,9 @@ const productController = {
                 user,
                 isAuthenticated,
             });
-        } catch (err) {
-            console.error("Error al ver la categoria:", err);
-            return res.status(500).json({ error: "Error en la base de datos", details: err.message });
+        } catch (error) {
+            console.error("Error al ver la categoria:", error);
+            return res.status(500).json({ error: "Error en la base de datos", details: error.message });
         }
     },
 
@@ -129,12 +129,12 @@ const productController = {
             await newProduct.save();
 
             return res.json({
-                message: "Producto creado!!!",
+                message: "Producto creado",
                 Product: newProduct,
             });
-        } catch (err) {
-            console.error("Error al guardar el Producto:", err);
-            return res.status(500).json({ error: "Error en la base de datos", details: err.message });
+        } catch (error) {
+            console.error("Error al guardar el Producto:", error);
+            return res.status(500).json({ error: "Error en la base de datos", details: error.message });
         }
     },
 
@@ -150,10 +150,10 @@ const productController = {
                 return res.status(404).json({ error: "Producto no encontrado" });
             }
 
-            return res.json({message: "Producto eliminado!", listProduct: products});
-        } catch (err) {
-            console.error('Error:', err);
-            return res.status(500).json({ error: "Error en la base de datos", details: err.message });
+            return res.json({message: "Producto eliminado", listProduct: products});
+        } catch (error) {
+            console.error('Error:', error);
+            return res.status(500).json({ error: "Error en la base de datos", details: error.message });
         }
     }
 }
