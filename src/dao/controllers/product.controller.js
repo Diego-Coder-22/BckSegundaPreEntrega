@@ -30,14 +30,45 @@ const productController = {
             const filter = await Product.paginate(query, options);
             const products = filter.docs.map(product => product.toObject());
 
-            if (req.accepts('html')) {
-                return res.render('realTimeProducts', { Products: products, Query: filter });
+            let prevLink = null;
+            if (filter.hasPrevPage) {
+                prevLink = `${req.protocol}://${req.get('host')}${req.baseUrl}?page=${filter.prevPage}`;
             }
 
-            res.json({ Products: products });
-        } catch (error) {
-            console.error('Error:', error);
-            return res.status(500).json({ error: "Error en la base de datos", details: error.message });
+            // Determinar el link para la página siguiente
+            let nextLink = null;
+            if (filter.hasNextPage) {
+                nextLink = `${req.protocol}://${req.get('host')}${req.baseUrl}?page=${filter.nextPage}`;
+            }
+
+            // Construir la respuesta JSON
+            const response = {
+                status: 'success',
+                Products: products,
+                Query: {
+                    totalDocs: filter.totalDocs,
+                    limit: filter.limit,
+                    totalPages: filter.totalPages,
+                    page: filter.page,
+                    pagingCounter: filter.pagingCounter,
+                    hasPrevPage: filter.hasPrevPage,
+                    hasNextPage: filter.hasNextPage,
+                    prevPage: filter.prevPage,
+                    nextPage: filter.nextPage,
+                    prevLink: prevLink,
+                    nextLink: nextLink
+                },
+            };
+
+            console.log(response);
+
+            if (req.accepts('html')) {
+                return res.render('realTimeProducts', { response, Carts: carts, user, isAuthenticated });
+            }
+
+        } catch (err) {
+            console.error('Error:', err);
+            return res.status(500).json({ error: "Error en la base de datos", details: err.message });
         }
     },
 
@@ -49,15 +80,15 @@ const productController = {
         try {
             const productDetail = await Product.findOne({ _id: productId }).lean();
 
-            if (req.accepts('html')) {
-                return res.render('product', { Product: productDetail });
-            }
+            console.log(productDetail);
 
-            res.json(productDetail);
+            if (req.accepts('html')) {
+                return res.render('product', { Product: productDetail, user, isAuthenticated });
+            }
         }
-        catch (error) {
-            console.error("Error al ver los detalles:",error);
-            return res.status(500).json({ error: "Error en la base de datos", details: error.message });
+        catch (err) {
+            console.error("Error al ver los detalles:", err);
+            return res.status(500).json({ error: "Error en la base de datos", details: err.message });
         }
     },
 
@@ -85,24 +116,53 @@ const productController = {
             const filter = await Product.paginate(query, options);
             const filterDoc = filter.docs.map(product => product.toObject());
 
+            let prevLink = null;
+            if (filter.hasPrevPage) {
+                prevLink = `${req.protocol}://${req.get('host')}${req.baseUrl}${req.path}?page=${filter.prevPage}`;
+            }
+
+            // Determinar el link para la página siguiente
+            let nextLink = null;
+            if (filter.hasNextPage) {
+                nextLink = `${req.protocol}://${req.get('host')}${req.baseUrl}${req.path}?page=${filter.nextPage}`;
+            }
+
+
+            // Construir la respuesta JSON
+            const response = {
+                status: 'success',
+                Category: filterDoc,
+                Query: {
+                    totalDocs: filter.totalDocs,
+                    limit: filter.limit,
+                    totalPages: filter.totalPages,
+                    page: filter.page,
+                    pagingCounter: filter.pagingCounter,
+                    hasPrevPage: filter.hasPrevPage,
+                    hasNextPage: filter.hasNextPage,
+                    prevPage: filter.prevPage,
+                    nextPage: filter.nextPage,
+                    prevLink: prevLink,
+                    nextLink: nextLink
+                },
+            };
+
+            console.log({
+                response,
+                user,
+                isAuthenticated,
+            });
+
             if (req.accepts('html')) {
                 return res.render('category', {
-                    Category: filterDoc,
-                    Query: filter,
+                    response,
                     user,
                     isAuthenticated,
                 });
             }
-
-            res.json({
-                Category: filterDoc,
-                Query: filter,
-                user,
-                isAuthenticated,
-            });
-        } catch (error) {
-            console.error("Error al ver la categoria:", error);
-            return res.status(500).json({ error: "Error en la base de datos", details: error.message });
+        } catch (err) {
+            console.error("Error al ver la categoria:", err);
+            return res.status(500).json({ error: "Error en la base de datos", details: err.message });
         }
     },
 
@@ -132,14 +192,14 @@ const productController = {
                 message: "Producto creado",
                 Product: newProduct,
             });
-        } catch (error) {
-            console.error("Error al guardar el Producto:", error);
-            return res.status(500).json({ error: "Error en la base de datos", details: error.message });
+        } catch (err) {
+            console.error("Error al guardar el Producto:", err);
+            return res.status(500).json({ error: "Error en la base de datos", details: err.message });
         }
     },
 
     deleteProduct: async (req, res) => {
-        const productId = req.params.id;
+        const productId = req.params.pid;
 
         try {
             const deleteProduct = await Product.deleteOne({ _id: productId }).lean();
@@ -150,10 +210,10 @@ const productController = {
                 return res.status(404).json({ error: "Producto no encontrado" });
             }
 
-            return res.json({message: "Producto eliminado", listProduct: products});
-        } catch (error) {
-            console.error('Error:', error);
-            return res.status(500).json({ error: "Error en la base de datos", details: error.message });
+            return res.json({ message: "Producto eliminado", listProduct: products });
+        } catch (err) {
+            console.error('Error:', err);
+            return res.status(500).json({ error: "Error en la base de datos", details: err.message });
         }
     }
 }

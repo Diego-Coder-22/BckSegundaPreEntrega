@@ -1,5 +1,8 @@
 const socket = io.connect('http://localhost:8080');
 
+const token = localStorage.getItem("token");
+console.log("Token:", token);
+
 function handleAddToCart(event) {
     if (!event.target.classList.contains('cart-btn')) {
         return;
@@ -8,12 +11,12 @@ function handleAddToCart(event) {
     const productId = event.target.getAttribute('data-product-id');
 
     // Realizar una solicitud HTTP POST para agregar el producto al carrito
-    fetch("http://localhost:8080/api/carts/add", {
+    fetch("http://localhost:8080/api/carts/", {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ productId }) 
+        body: JSON.stringify({ productId })
     })
         .then(response => {
             if (!response.ok) {
@@ -86,7 +89,7 @@ document.getElementById('addProductForm').addEventListener('submit', async (even
     const formData = new FormData(event.target);
 
     try {
-        const response = await fetch('http://localhost:8080/api/products/addProduct', {
+        const response = await fetch('http://localhost:8080/api/products/', {
             method: 'POST',
             body: formData
         });

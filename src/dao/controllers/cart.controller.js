@@ -17,14 +17,13 @@ const cartController = {
       if (!cart) {
         return res.status(404).json({ error: "Carrito no encontrado" });
       }
-
+      
       if (req.accepts("html")) {
         // Renderizar el archivo Handlebars
-        return res.render("cart", { cart: cart });
-      } else {
-        // Enviar respuesta JSON si no se acepta HTML
-        return res.json(cart);
+        return res.render("cart", { cid: cart._id, cart: cart, user, isAuthenticated });
       }
+
+      return res.json(cart)
     } catch (error) {
       console.error("Error al obtener el carrito por ID:", error);
       return res.status(500).json({ error: "Error en la base de datos", details: error.message });
@@ -48,34 +47,30 @@ const cartController = {
       }
 
       // Verificar si ya existe un carrito para el usuario
-      let cart = await Cart.findOne({ user: req.session.user });
+      let cart = await Cart.findOne({});
 
       // Si no hay un carrito existente, crear uno nuevo
       if (!cart) {
         cart = new Cart({
-          user: req.session.user,
-          products: [],
-          total: 0
+          items: [],
         });
       }
 
-     // Crear un nuevo elemento de carrito
-      const cartItem = {
-        product: productId,
-        productQuantity: 1,
-        productPrice: product.price,
-        productTotal: product.price * 1,
-    };
-    // Agregar el nuevo elemento de carrito a la lista de productos del carrito
-    cart.products.push(cartItem);
+      // Crear un nuevo elemento de carrito
+      const cartItem = new Cart({
+        products: [{
+          product: productId,
+          productQuantity: 1,
+          productPrice: product.price,
+          productTotal: product.price * 1,
+        }],
+        total: product.price,
+      });
+    
+      // Guardar el nuevo elemento de carrito en la base de datos
+      const savedCartItem = await cartItem.save();
 
-    // Calcular el nuevo total del carrito sumando el precio del producto
-    cart.total += product.price;
-
-      // Guardar el carrito en la base de datos
-      await cart.save();
-
-      return res.json({ message: "Producto agregado al carrito correctamente", cartItemId: cartItem._id });
+      return res.json({ message: "Producto agregado al carrito correctamente", cartItemId: savedCartItem._id });
     } catch (error) {
       console.error('Error:', error);
       return res.status(500).json({ error: "Error en la base de datos", details: error.message });

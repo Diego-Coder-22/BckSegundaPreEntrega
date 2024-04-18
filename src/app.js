@@ -11,7 +11,10 @@ import cookieParser from "cookie-parser";
 import session from "express-session";
 import FileStore from "session-file-store";
 import MongoStore from "connect-mongo";
+import passport from "./config/jwt.js";
 import router from "./routes.js";
+import auth from "./config/auth.js";
+import { MONGO_URL } from "./util.js";
 
 Handlebars.registerHelper('eq', function (a, b, options) {
     return a === b ? options.fn(this) : options.inverse(this);
@@ -20,6 +23,9 @@ Handlebars.registerHelper('eq', function (a, b, options) {
 const fileStore = FileStore(session);
 const app = express();
 const httpServer = http.createServer(app);
+
+// Inicializar Passport
+auth.initializePassport();
 
 // Middleware para analizar el cuerpo de la solicitud JSON
 app.use(express.json());
@@ -30,7 +36,7 @@ app.use(cookieParser());
 // Middleware para usar el session para autenticaciones de usuarios
 app.use(session({
     store: MongoStore.create({
-        mongoUrl: `mongodb+srv://diegocodeidea:uu5qyW7bS4FGpx1I@cluster0.70gqwqq.mongodb.net/`,
+        mongoUrl: MONGO_URL,
         ttl: 15,
     }),
     secret: "secret_key",
@@ -38,7 +44,9 @@ app.use(session({
     saveUninitialized: false,
 }))
 
-mongoose.connect(`mongodb+srv://diegocodeidea:uu5qyW7bS4FGpx1I@cluster0.70gqwqq.mongodb.net/`,{
+mongoose.connect(MONGO_URL, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
 });
 
 const db = mongoose.connection;
@@ -56,12 +64,16 @@ app.use(bodyParser.json());
 
 app.use(express.urlencoded({ extended: true }));
 
+// Middleware de Passport para la autenticación de sesión
+app.use(passport.initialize());
+app.use(passport.session());
+
 // Middleware para utilizar plantillas html
 app.engine("handlebars", handlebars.engine());
 app.set("views", __dirname + "/views");
 app.set("view engine", "handlebars");
 app.use(express.static(path.join(__dirname, 'public')));
-app.use("/api/", router);
+app.use("/", router);
 
 const PORT = 8080;
 
