@@ -45,8 +45,6 @@ app.use(session({
 }))
 
 mongoose.connect(MONGO_URL, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
 });
 
 const db = mongoose.connection;
