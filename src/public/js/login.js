@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 // Extraer el token de la respuesta JSON
                 // Almacenar el token en el almacenamiento local
                 localStorage.setItem('token', json.access_token);
-                console.log("Inicio de sesión exitoso!");
+                console.log("Inicio de sesión exitoso");
             })
             .catch(error => {
                 console.error('Error en el inicio de sesión:', error);

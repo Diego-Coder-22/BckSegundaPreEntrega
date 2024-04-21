@@ -5,7 +5,6 @@ import config from "./config.js";
 const ExtractJWT = passportJWT.ExtractJwt;
 const JwtStrategy = passportJWT.Strategy;
 
-const configurePassport = () => {
     const jwtOptions = {
         jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
         secretOrKey: config.jwtSecret,
@@ -24,11 +23,6 @@ const configurePassport = () => {
         }
     });
 
-    // Agregar la estrategia JWT a Passport
-    passport.use(strategy);
+passport.use(strategy);
 
-    // Inicializar Passport
-    passport.initialize();
-};
-
-export default configurePassport;
+export default passport;
