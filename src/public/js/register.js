@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         console.log("Registro de usuario exitoso")
                     } else {
                         // Si la respuesta no es exitosa, mostrar un mensaje de error
-                        errorMessage.textContent = 'Ya existe Cuenta con ese email.';
+                        errorMessage.textContent = 'Ya existe Usuario con ese email.';
                         errorMessage.style.display = 'block';
                     }
                 })

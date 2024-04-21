@@ -1,5 +1,5 @@
 const config = {
-    jwtSecret: 'Diego_Code',
+    jwtSecret: 'tu_secreto_jwt_aqui',
 }
 
 export default config;

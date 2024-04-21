@@ -1,50 +1,25 @@
 import express from "express";
 import mongoose from "mongoose";
 import http from "http";
-import Handlebars from "handlebars";
-import handlebars from "express-handlebars";
-import { Server } from "socket.io";
-import bodyParser from "body-parser";
-import __dirname from "./util.js";
+import expressHandlebars from "express-handlebars";
 import path from "path";
 import cookieParser from "cookie-parser";
 import session from "express-session";
-import FileStore from "session-file-store";
 import MongoStore from "connect-mongo";
-import passport from "./config/jwt.js";
+import passport from "./config/jwt.js"; // Asegúrate de definir la estrategia JWT correctamente aquí
 import router from "./routes.js";
 import auth from "./config/auth.js";
 import { MONGO_URL } from "./util.js";
 
-Handlebars.registerHelper('eq', function (a, b, options) {
-    return a === b ? options.fn(this) : options.inverse(this);
-});
-
-const fileStore = FileStore(session);
 const app = express();
 const httpServer = http.createServer(app);
 
 // Inicializar Passport
 auth.initializePassport();
 
-// Middleware para analizar el cuerpo de la solicitud JSON
-app.use(express.json());
-
-// Middleware para utilizar cookies
-app.use(cookieParser());
-
-// Middleware para usar el session para autenticaciones de usuarios
-app.use(session({
-    store: MongoStore.create({
-        mongoUrl: MONGO_URL,
-        ttl: 15,
-    }),
-    secret: "secret_key",
-    resave: false,
-    saveUninitialized: false,
-}))
-
 mongoose.connect(MONGO_URL, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
 });
 
 const db = mongoose.connection;
@@ -57,18 +32,32 @@ db.once("open", () => {
     console.log("Conexión a MongoDB exitosa");
 });
 
-// Middleware adicional para analizar el cuerpo de la solicitud JSON en cartRouter
-app.use(bodyParser.json());
-
+// Middleware para analizar el cuerpo de la solicitud JSON
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Middleware para utilizar cookies
+app.use(cookieParser());
+
+// Middleware para utilizar session para autenticaciones de usuarios
+const sessionStore = MongoStore.create({ 
+    mongoUrl: MONGO_URL,
+    ttl: 15
+});
+app.use(session({
+    store: sessionStore,
+    secret: "secret_key",
+    resave: false,
+    saveUninitialized: false
+}));
 
 // Middleware de Passport para la autenticación de sesión
 app.use(passport.initialize());
 app.use(passport.session());
 
 // Middleware para utilizar plantillas html
-app.engine("handlebars", handlebars.engine());
-app.set("views", __dirname + "/views");
+app.engine("handlebars", expressHandlebars());
+app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "handlebars");
 app.use(express.static(path.join(__dirname, 'public')));
 app.use("/", router);
@@ -81,7 +70,7 @@ httpServer.listen(PORT, () => {
 });
 
 // Servidor WebSocket
-const io = new Server(httpServer);
+const io = require('socket.io')(httpServer);
 
 io.on('connection', socket => {
     console.log("Nuevo cliente conectado");

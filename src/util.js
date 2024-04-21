@@ -8,11 +8,11 @@ const __dirname = dirname(__filename);
 
 dotenv.config({ path: path.resolve(__dirname, './.env') });
 
-export const MONGO_URL = process.env.MONGO_URL;
-export const JWT_SECRET = process.env.JWT_SECRET; 
-export const CLIENT_ID = process.env.CLIENT_ID;
-export const CLIENT_SECRET = process.env.CLIENT_SECRET;
-export const CALLBACK_URL = process.env.CALLBACK_URL;
+export const MONGO_URL = `mongodb+srv://diegocodeidea:uu5qyW7bS4FGpx1I@cluster0.70gqwqq.mongodb.net/`;
+export const JWT_SECRET = "tu_secreto_jwt_aqui"; 
+export const CLIENT_ID = "Iv1.87747fbca0bf13f1";
+export const CLIENT_SECRET = "e178cebcfae3b791a651882b3b471e53096e3f69";
+export const CALLBACK_URL = "http://localhost:8080/users/githubcallback";
 
 export function getProductsFilePath() {
     return path.join(__dirname, "../productos.json");
