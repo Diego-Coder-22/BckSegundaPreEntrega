@@ -5,7 +5,7 @@ import jwt from "jsonwebtoken";
 import User from "../dao/models/user.model.js";
 import bcrypt from "bcrypt";
 import config from "./config.js";
-import { CLIENT_ID, CLIENT_SECRET, CALLBACK_URL } from "../util.js";
+import { CLIENT_ID, CLIENT_SECRET, CALLBACK_URL } from "../util.js"; 
 
 const initializePassport = () => {
     // Configurar estrategia de autenticación local
@@ -85,11 +85,11 @@ const initializePassport = () => {
 // Función para extraer cookies
 export const cookieExtractor = (req) => {
     let token = null;
-
+    
     if (req && req.cookies) {
         token = req.cookies["jwtToken"];
     }
-
+    
     return token;
 };
 
@@ -121,6 +121,7 @@ export const authToken = (req, res, next) => {
         next();
     });
 };
+
 
 const auth = {
     initializePassport,

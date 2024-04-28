@@ -4,6 +4,25 @@ import { generateAuthToken } from "../../config/auth.js";
 import passport from "passport";
 
 const userController = {
+    /* Metodo para el proyecto en algun futuro
+    getUserById: async (req, res) => {
+        const userId = req.params.uid;
+
+        try {
+            const userDetail = await User.findOne({ _id: userId }).lean();
+
+            if (req.accepts('html')) {
+                return res.render('user', { user: userDetail });
+            }
+
+            res.json(userDetail);
+        }
+        catch (err) {
+            console.error("Error al ver los detalles:", err);
+            return res.status(500).json({ error: "Error en la base de datos", details: err.message });
+        }
+    },
+    */
 
     getLogin: async (req, res) => {
         res.render("login");
@@ -76,14 +95,16 @@ const userController = {
             const access_token = generateAuthToken(newUser);
 
             req.session.userId = newUser._id;
+
             req.session.user = newUser;
+
             req.session.isAuthenticated = true;
 
             console.log("Datos del registro:", newUser, "token:", access_token);
 
             res.cookie("jwtToken", access_token, {
                 httpOnly: true,
-            }).send({ status: "Success", message: user });
+            }).send({ status: "Success", message: newUser, access_token });
 
         } catch (error) {
             console.error("Error al registrar usuario:", error);
@@ -101,18 +122,24 @@ const userController = {
         try {
             // Genera el token de acceso
             const access_token = generateAuthToken(user);
+
             // Establece la sesión del usuario
             req.session.userId = user._id;
             req.session.user = user;
             req.session.isAuthenticated = true;
+
             console.log("Token login github:", access_token);
+
             // Envia la respuesta con el token de acceso al frontend
-            res.json({message: "success", user, access_token});
+            res.cookie("jwtToken", access_token, {
+                httpOnly: true,
+            }).send({ status: "Success", message: user, access_token });
         } catch (error) {
             console.error('Error en el callback de GitHub:', error);
             res.status(500).json({ error: "Error interno del servidor" });
         }
     },
+
     logOut: async (req, res) => {
         try {
             req.session.userId = null;
@@ -126,4 +153,5 @@ const userController = {
         }
     }
 }
+
 export default userController;

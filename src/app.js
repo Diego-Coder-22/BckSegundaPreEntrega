@@ -11,6 +11,7 @@ import cookieParser from "cookie-parser";
 import session from "express-session";
 import FileStore from "session-file-store";
 import MongoStore from "connect-mongo";
+import cors from "cors";
 import passport from "./config/jwt.js";
 import router from "./routes.js";
 import auth from "./config/auth.js";
@@ -33,6 +34,9 @@ app.use(express.json());
 // Middleware para utilizar cookies
 app.use(cookieParser());
 
+// Middleware para usar cors
+app.use(cors());
+
 // Middleware para usar el session para autenticaciones de usuarios
 app.use(session({
     store: MongoStore.create({
@@ -49,6 +53,8 @@ app.use(session({
 //app.use("/api/carts", cartRouter);
 
 mongoose.connect(MONGO_URL, {
+
+
 });
 
 const db = mongoose.connection;
@@ -81,14 +87,14 @@ const PORT = 8080;
 
 // Servidor HTTP
 httpServer.listen(PORT, () => {
-    console.log("Servidor conectado!!");
+    console.log("Servidor conectado");
 });
 
 // Servidor WebSocket
 const io = new Server(httpServer);
 
 io.on('connection', socket => {
-    console.log("Nuevo cliente conectado!!");
+    console.log("Nuevo cliente conectado");
 
     socket.on("deleteProduct", (deleteProductId) => {
         console.log("Producto borrado:", deleteProductId);

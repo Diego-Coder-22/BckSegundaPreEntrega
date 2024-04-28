@@ -59,7 +59,7 @@ const cartController = {
       // Crear un nuevo elemento de carrito
       const cartItem = new Cart({
         products: [{
-          product: productId,
+          product: product.title,
           productQuantity: 1,
           productPrice: product.price,
           productTotal: product.price * 1,
