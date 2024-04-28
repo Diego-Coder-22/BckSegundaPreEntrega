@@ -27,17 +27,13 @@ const userController = {
                 // Generar token JWT
                 const access_token = generateAuthToken(user);
 
-                res.cookie("jwt", access_token, { httpOnly: true });
-
                 req.session.userId = user._id;
-
                 req.session.user = user;
-
                 req.session.isAuthenticated = true;
 
                 console.log("Datos del login:", user, "token:", access_token);
 
-                return res.redirect("/api/products/");
+                res.json({ message: "Success", user, access_token });
             })(req, res, next);
 
         } catch (error) {
@@ -80,14 +76,17 @@ const userController = {
             res.cookie("jwt", access_token, { httpOnly: true });
 
             req.session.userId = newUser._id;
-
             req.session.user = newUser;
-
             req.session.isAuthenticated = true;
 
             console.log("Datos del registro:", newUser, "token:", access_token);
 
-            return res.redirect("/api/products");
+            if (req.accepts("html")) {
+                res.redirect("/api/products/");
+            }
+            else {
+                res.json({message: "Success", newUser, access_token});
+            }
 
         } catch (error) {
             console.error("Error al registrar usuario:", error);
