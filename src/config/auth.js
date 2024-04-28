@@ -84,12 +84,12 @@ const initializePassport = () => {
 
 // Función para extraer cookies
 export const cookieExtractor = (req) => {
-    //lógica a implementar
-
     let token = null;
+
     if (req && req.cookies) {
         token = req.cookies["jwtToken"];
     }
+
     return token;
 };
 
@@ -102,29 +102,25 @@ export const generateAuthToken = (user) => {
 // Funcion para validar tokens
 export const authToken = (req, res, next) => {
     const authHeader = req.headers.authorization;
+    const cookieToken = req.cookies.jwtToken;
 
-    if (!authHeader) {
+    // Verificar si el token está presente en el encabezado de autorización o en la cookie jwtToken
+    const token = authHeader ? authHeader.split(" ")[1] : cookieToken;
+
+    if (!token) {
         return res.status(401).send({ status: "error", message: "No autorizado" });
     }
 
-    console.log(authHeader);
-
-    const token = authHeader.split(" ")[1];
-
-    // Error para ver, cada vez que realizo un logout, se produce el error de JsonWebTokenError: jwt malformed
     jwt.verify(token, config.jwtSecret, (error, credentials) => {
-        console.log(error);
-
         if (error) {
             console.error('JWT Verification Error:', error);
-            // Handle the error appropriately
             return res.status(401).send({ status: "error", message: "Unauthorized" });
         }
 
         req.user = credentials.user;
         next();
-    })
-}
+    });
+};
 
 const auth = {
     initializePassport,
