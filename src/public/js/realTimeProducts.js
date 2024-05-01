@@ -1,11 +1,16 @@
 const socket = io.connect('http://localhost:8080');
 
 const token = localStorage.getItem("token");
-console.log("Token:", token);
+const userId = localStorage.getItem("userId");
 
 function handleAddToCart(event) {
     if (!event.target.classList.contains('cart-btn')) {
         return;
+    }
+
+    if (!token) {
+        console.log("Usuario no logueado o registrado");
+        window.location.href = "http://localhost:8080/users/login"
     }
 
     const productId = event.target.getAttribute('data-product-id');
@@ -14,6 +19,7 @@ function handleAddToCart(event) {
     fetch("http://localhost:8080/api/carts/", {
         method: 'POST',
         headers: {
+            "authorization": `Bearer ${token}`,
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({ productId })
@@ -91,7 +97,11 @@ document.getElementById('addProductForm').addEventListener('submit', async (even
     try {
         const response = await fetch('http://localhost:8080/api/products/', {
             method: 'POST',
-            body: formData
+            body: formData,
+            headers: {
+                "authorization": `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
         });
 
         if (!response.ok) {
@@ -119,7 +129,7 @@ function handleDeleteProduct(event) {
     const productId = event.target.getAttribute('data-product-id');
 
     // Emitir el evento "deleteProduct" al servidor con el ID del producto a eliminar
-    socket.emit('deleteProduct', productId);
+    socket.emit('deleteProduct', { productId, userId });
 }
 
 // Agregar un event listener para el evento click en el contenedor productList

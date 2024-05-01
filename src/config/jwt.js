@@ -6,12 +6,17 @@ import { cookieExtractor } from "./auth.js";
 const ExtractJWT = passportJWT.ExtractJwt;
 const JwtStrategy = passportJWT.Strategy;
 
-const jwtOptions = {
+const jwtOptionsExtractor = {
     jwtFromRequest: ExtractJWT.fromExtractors([cookieExtractor]),
     secretOrKey: "jwtToken",
 }
 
-const strategy = new JwtStrategy(jwtOptions, async (jwt_payload, done) => {
+const jwtOptions = {
+    jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
+    secretOrKey: config.jwtSecret,
+};
+
+const strategyExtractor = new JwtStrategy(jwtOptionsExtractor, async (jwt_payload, done) => {
     try {
         if (jwt_payload) {
             return done(null, jwt_payload);
@@ -24,11 +29,6 @@ const strategy = new JwtStrategy(jwtOptions, async (jwt_payload, done) => {
     }
 })
 
-/* Metodos anteriores
-const jwtOptions = {
-    jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
-    secretOrKey: config.jwtSecret,
-};
 const strategy = new JwtStrategy(jwtOptions, (jwt_payload, next) => {
     try {
         if (jwt_payload) {
@@ -41,8 +41,9 @@ const strategy = new JwtStrategy(jwtOptions, (jwt_payload, next) => {
         return next(error, false);
     }
 });
-*/
 
+
+passport.use(strategyExtractor);
 passport.use(strategy);
 
 export default passport;

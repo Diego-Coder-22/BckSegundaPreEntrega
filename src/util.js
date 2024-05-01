@@ -11,7 +11,7 @@ dotenv.config({ path: path.resolve(__dirname, './.env') });
 export const MONGO_URL = "mongodb+srv://diegocodeidea:uu5qyW7bS4FGpx1I@cluster0.70gqwqq.mongodb.net/";
 export const JWT_SECRET = "tu_secreto_jwt_aqui"; 
 export const CLIENT_ID = "Iv1.87747fbca0bf13f1";
-export const CLIENT_SECRET = "e178cebcfae3b791a651882b3b471e53096e3f69";
+export const CLIENT_SECRET = "d0dea607ef2be3eaf72d246f3b9b45a3316fe0de";
 export const CALLBACK_URL = "http://localhost:8080/users/githubcallback";
 
 export function getProductsFilePath() {
