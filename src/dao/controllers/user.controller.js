@@ -1,62 +1,50 @@
-import User from "../models/user.model.js";
-import bcrypt from "bcrypt";
-import { generateAuthToken } from "../../config/auth.js";
-import passport from "passport";
+import userService from "../services/user.service.js";
 
 const userController = {
-    /* Metodo para el proyecto en algun futuro
     getUserById: async (req, res) => {
         const userId = req.params.uid;
-
+        const isAuthenticated = req.session.isAuthenticated;
+        const jwtToken = req.session.token;
+    
         try {
-            const userDetail = await User.findOne({ _id: userId }).lean();
+            const user = await userService.getUserById(userId);
 
-            if (req.accepts('html')) {
-                return res.render('user', { user: userDetail });
+            if (req.accepts("html")) {
+                return res.render("user", { User: user, user, isAuthenticated, jwtToken });
             }
-
-            res.json(userDetail);
+        } catch (error) {
+            console.error("Error al obtener usuario por ID:", error);
+            res.status(500).json({ error: "Error interno del servidor" });
         }
-        catch (err) {
-            console.error("Error al ver los detalles:", err);
-            return res.status(500).json({ error: "Error en la base de datos", details: err.message });
-        }
-    },
-    */
+    },    
 
     getLogin: async (req, res) => {
-        res.render("login");
+        try {
+            const loginView = await userService.getLogin();
+            res.render(loginView);
+        } catch (error) {
+            console.error("Error al obtener la vista de inicio de sesión:", error);
+            res.status(500).json({ error: "Error interno del servidor" });
+        }
     },
 
     login: async (req, res, next) => {
         const { email, password } = req.body;
 
         try {
-            passport.authenticate("local", (err, user, info) => {
-                if (err) {
-                    return next(err);
-                }
-                if (!user) {
-                    return res.status(401).json({ error: "Credenciales inválidas" });
-                }
-                if (email === "admin@coder.com" && password === "admin123") {
-                    user.role = "admin";
-                }
+            const { user, access_token } = await userService.login(email, password);
 
-                // Generar token JWT
-                const access_token = generateAuthToken(user);
+            // Establece la sesión del usuario
+            req.session.token = access_token;
+            req.session.userId = user._id;
+            req.session.user = user;
+            req.session.isAuthenticated = true;
 
-                req.session.userId = user._id;
-                req.session.user = user;
-                req.session.isAuthenticated = true;
+            console.log("Datos del login:", user, "token:", access_token);
 
-                console.log("Datos del login:", user, "token:", access_token);
-
-                res.cookie("jwtToken", access_token, {
-                    httpOnly: true,
-                }).send({ status: "Success", message: user, access_token });
-            })(req, res, next);
-
+            res.cookie("jwtToken", access_token, {
+                httpOnly: true,
+            }).send({ status: "Success", message: user, access_token, userId: user._id });
         } catch (error) {
             console.error("Error al iniciar sesión:", error);
             return res.status(500).json({ error: "Error interno del servidor" });
@@ -64,47 +52,32 @@ const userController = {
     },
 
     getRegister: async (req, res) => {
-        res.render("register");
+        try {
+            const registerView = await userService.getRegister();
+            res.render(registerView);
+        } catch (error) {
+            console.error("Error al obtener la vista de registro:", error);
+            res.status(500).json({ error: "Error interno del servidor" });
+        }
     },
 
     register: async (req, res, next) => {
-        const { first_name, last_name, email, age, password } = req.body;
+        const userData = req.body;
 
         try {
-            const existingUser = await User.findOne({ email });
+            const { newUser, access_token } = await userService.register(userData);
 
-            if (existingUser) {
-                return res.status(400).json({ error: "El usuario ya existe" });
-            }
-
-            const hashedPassword = await bcrypt.hash(password, 10);
-
-            const role = email === "admin@coder.com" ? "admin" : "user";
-
-            const newUser = new User({
-                first_name: first_name,
-                last_name: last_name,
-                email: email,
-                age: age,
-                password: hashedPassword,
-                role,
-            });
-
-            await newUser.save();
-
-            const access_token = generateAuthToken(newUser);
-
+            // Establece la sesión del usuario
+            req.session.token = access_token;
             req.session.userId = newUser._id;
-
             req.session.user = newUser;
-
             req.session.isAuthenticated = true;
 
             console.log("Datos del registro:", newUser, "token:", access_token);
 
             res.cookie("jwtToken", access_token, {
                 httpOnly: true,
-            }).send({ status: "Success", message: newUser, access_token });
+            }).send({ status: "Success", message: newUser, access_token, userId: newUser._id });
 
         } catch (error) {
             console.error("Error al registrar usuario:", error);
@@ -112,40 +85,100 @@ const userController = {
         }
     },
 
-    getGitHub: passport.authenticate("github", { scope: ["user:email"] }),
-
-    gitHubCallback: passport.authenticate("github", { failureRedirect: "/login" }),
-
-    // Redirige al usuario a la página de inicio después de iniciar sesión con GitHub
-    handleGitHubCallback: async (req, res) => {
-        const user = req.user;
+    getGitHub: async (req, res) => {
         try {
-            // Genera el token de acceso
-            const access_token = generateAuthToken(user);
+            const githubAuth = await userService.getGitHub();
+            res.redirect(githubAuth);
+        } catch (error) {
+            console.error("Error al obtener la autenticación de GitHub:", error);
+            res.status(500).json({ error: "Error interno del servidor" });
+        }
+    },
+
+    gitHubCallback: async (req, res, next) => {
+        try {
+            await userService.gitHubCallback()(req, res, next);
+        } catch (error) {
+            console.error("Error en el callback de GitHub:", error);
+            res.status(500).json({ error: "Error interno del servidor" });
+        }
+    },
+
+    handleGitHubCallback: async (req, res) => {
+        try {
+            const { user, access_token } = await userService.handleGitHubCallback(req);
 
             // Establece la sesión del usuario
+            req.session.token = access_token;
             req.session.userId = user._id;
             req.session.user = user;
             req.session.isAuthenticated = true;
 
-            console.log("Token login github:", access_token);
-
-            // Envia la respuesta con el token de acceso al frontend
             res.cookie("jwtToken", access_token, {
                 httpOnly: true,
-            }).send({ status: "Success", message: user, access_token });
+            }).send({ status: "Success", message: user, access_token, userId: user._id });
         } catch (error) {
             console.error('Error en el callback de GitHub:', error);
             res.status(500).json({ error: "Error interno del servidor" });
         }
     },
 
+    updateUser: async (req, res) => {
+        const userId = req.params.uid;
+        const updatedUserData = req.body;
+    
+        try {
+            const updatedUser = await userService.updateUser(userId, updatedUserData);
+            res.json(updatedUser);
+        } catch (error) {
+            console.error("Error al actualizar usuario:", error);
+            res.status(500).json({ error: "Error interno del servidor" });
+        }
+    },    
+
+    getUpdateUser: async (req, res) => {
+        const isAuthenticated = req.session.isAuthenticated;
+        const jwtToken = req.session.token;
+    
+        try {
+            const updateUserView = await userService.getUpdateUser();
+            res.render(updateUserView, { isAuthenticated, jwtToken });
+        } catch (error) {
+            console.error("Error al obtener la vista de editar usuario:", error);
+            res.status(500).json({ error: "Error interno del servidor" });
+        }
+    },
+
+    changePassword: async (req, res) => {
+        const userId = req.params.uid;
+        const { oldPassword, newPassword } = req.body;
+
+        try {
+            const changedPassword = await userService.changePassword(userId, oldPassword, newPassword);
+            res.json(changedPassword);
+        }
+        catch (error) {
+            console.error("Error al cambiar la contraseña:", error);
+            res.status(500).json({ error: "Error interno del servidor" });
+        }
+    },
+
+    getChangePassword: async (req, res) => {
+        const isAuthenticated = req.session.isAuthenticated;
+        const jwtToken = req.session.token;
+    
+        try {
+            const changePasswordView = await userService.getChangePassword();
+            res.render(changePasswordView, { isAuthenticated, jwtToken });
+        } catch (error) {
+            console.error("Error al obtener la vista de cambiar contraseña:", error);
+            res.status(500).json({ error: "Error interno del servidor" });
+        }
+    },
+
     logOut: async (req, res) => {
         try {
-            req.session.userId = null;
-            req.session.user = null;
-            req.session.isAuthenticated = false;
-            res.clearCookie("jwtToken");
+            await userService.logOut(res, req);
             return res.json({ message: "Logout funciona" });
         } catch (error) {
             console.error("Error al cerrar sesión:", error);

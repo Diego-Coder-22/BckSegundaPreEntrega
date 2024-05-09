@@ -3,6 +3,10 @@ const socket = io.connect('http://localhost:8080');
 const token = localStorage.getItem("token");
 const userId = localStorage.getItem("userId");
 
+document.getElementById('userId').value = userId;
+
+console.log("Token:", token);
+
 function handleAddToCart(event) {
     if (!event.target.classList.contains('cart-btn')) {
         return;
@@ -10,7 +14,7 @@ function handleAddToCart(event) {
 
     if (!token) {
         console.log("Usuario no logueado o registrado");
-        window.location.href = "http://localhost:8080/users/login"
+        window.location.href = "http://localhost:8080/api/sessions/login"
     }
 
     const productId = event.target.getAttribute('data-product-id');
@@ -22,7 +26,7 @@ function handleAddToCart(event) {
             "authorization": `Bearer ${token}`,
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ productId })
+        body: JSON.stringify({ productId, userId })
     })
         .then(response => {
             if (!response.ok) {
@@ -75,9 +79,9 @@ async function renderProducts(products) {
                 <p class="card-text">Precio: $${products.price}</p>
                 <p class="card-text">Stock: ${products.stock}</p>
                 <p class="card-text">Categoría: ${products.category}</p>
-                <a href="http://localhost:8080/api/products/${products._id}" class="btn btn-primary">Ver detalles</a>
-                <button class="btn btn-danger delete-btn" data-product-id=${products._id}>Eliminar Producto</button>
-                <button class="btn btn-success cart-btn" data-product-id=${products._id}>Agregar al carrito</button> 
+                <a href="http://localhost:8080/api/products/{{this._id}}" class="btn btn-primary">Ver detalles</a>
+                <button class="btn btn-danger delete-btn" data-product-id="{{this._id}}">Eliminar Producto</button>
+                <button class="btn btn-success cart-btn" data-product-id="{{this._id}}">Agregar al carrito</button> 
             </div>
         </div>`;
     productList.appendChild(productElement);
@@ -100,7 +104,6 @@ document.getElementById('addProductForm').addEventListener('submit', async (even
             body: formData,
             headers: {
                 "authorization": `Bearer ${token}`,
-                'Content-Type': 'application/json'
             },
         });
 
@@ -129,7 +132,7 @@ function handleDeleteProduct(event) {
     const productId = event.target.getAttribute('data-product-id');
 
     // Emitir el evento "deleteProduct" al servidor con el ID del producto a eliminar
-    socket.emit('deleteProduct', { productId, userId });
+    socket.emit('deleteProduct', productId, userId );
 }
 
 // Agregar un event listener para el evento click en el contenedor productList

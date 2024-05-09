@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function () {
             formData.forEach((val, key) => obj[key]=val);
             const errorMessage = document.getElementById('errorMessage');
 
-            fetch('http://localhost:8080/users/login', {
+            fetch('http://localhost:8080/api/sessions/login', {
                 method: 'POST',
                 body: JSON.stringify(obj),
                 headers: {
@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.log("Token:", token);
                 console.log("userId:", userId);
                 console.log("Inicio de sesión exitoso!");
-                window.location.href = "http://localhost:8080/api/products/"
+                window.location.href = `http://localhost:8080/api/sessions/dashboard/${userId}`
             })
             .catch(error => {
                 console.error('Error en el inicio de sesión:', error);
@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const errorMessage = document.getElementById('errorMessage');
 
-            fetch('http://localhost:8080/users/github', {
+            fetch('http://localhost:8080/api/sessions/github', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json' 

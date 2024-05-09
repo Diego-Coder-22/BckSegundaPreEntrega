@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function () {
             formData.forEach((val, key) => obj[key]=val);
             const errorMessage = document.getElementById('errorMessage');
 
-            fetch('http://localhost:8080/users/register', {
+            fetch('http://localhost:8080/api/sessions/register', {
                 method: 'POST',
                 body: JSON.stringify(obj),
                 headers: {
@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 localStorage.setItem('userId', userId);
                 console.log("Token:", token);
                 console.log("User Id:", userId);
-                console.log("Inicio de sesión exitoso!");
+                console.log("Inicio de sesión exitoso");
                 window.location.href = "http://localhost:8080/api/products/"
             })
             .catch(error => {

@@ -35,7 +35,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 // Middleware para usar cors
-app.use(cors());
+app.use(cors()); 
 
 // Middleware para usar el session para autenticaciones de usuarios
 app.use(session({
@@ -44,8 +44,6 @@ app.use(session({
         ttl: 15,
     }),
     secret: "secret_key",
-    resave: false,
-    saveUninitialized: false,
 }))
 
 // Rutas para productos y carritos
@@ -53,14 +51,14 @@ app.use(session({
 //app.use("/api/carts", cartRouter);
 
 mongoose.connect(MONGO_URL, {
-
-
+    useNewUrlParser: true,
+    useUnifiedTopology: true
 });
 
 const db = mongoose.connection;
 
-db.on("error", (error) => {
-    console.error("Error de conexión a MongoDB:", error);
+db.on("error", (err) => {
+    console.error("Error de conexión a MongoDB:", err);
 });
 
 db.once("open", () => {
@@ -87,14 +85,14 @@ const PORT = 8080;
 
 // Servidor HTTP
 httpServer.listen(PORT, () => {
-    console.log("Servidor conectado");
+    console.log("Servidor conectado!!");
 });
 
 // Servidor WebSocket
 const io = new Server(httpServer);
 
 io.on('connection', socket => {
-    console.log("Nuevo cliente conectado");
+    console.log("Nuevo cliente conectado!!");
 
     socket.on("deleteProduct", (deleteProductId) => {
         console.log("Producto borrado:", deleteProductId);
