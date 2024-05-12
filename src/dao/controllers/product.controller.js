@@ -1,4 +1,4 @@
-import productService from "../Services/product.service.js";
+import productService from "../services/product.service.js";
 import Cart from "../Models/cart.model.js";
 
 const productController = {
@@ -72,7 +72,7 @@ const productController = {
             const newProduct = await productService.addProduct(productData, req);
 
             return res.json({
-                message: "Producto creado",
+                message: "Producto creado!!!",
                 Product: newProduct,
             });
         } catch (err) {
@@ -87,7 +87,7 @@ const productController = {
         try {
             await productService.updateProduct(productId, req);
 
-            return res.json({ message: "Producto actualizado" });
+            return res.json({ message: "Producto actualizado!" });
         }
         catch (err) {
             console.error('Error:', err);
@@ -102,7 +102,7 @@ const productController = {
         try {
             await productService.deleteProduct(productId, userId);
 
-            return res.json({ message: "Producto eliminado" });
+            return res.json({ message: "Producto eliminado!" });
         } catch (err) {
             console.error('Error:', err);
             return res.status(500).json({ error: "Error en la base de datos", details: err.message });

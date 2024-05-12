@@ -1,6 +1,6 @@
 import productRepository from "../Repositories/product.repository.js";
 import ProductDTO from "../DTO/product.dto.js";
-import User from "../models/user.model.js";
+import User from "../Models/user.model.js";
 
 const productService = {
     getProducts: async (query, currentPage) => {
