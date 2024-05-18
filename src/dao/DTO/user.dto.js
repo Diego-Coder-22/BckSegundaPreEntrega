@@ -10,3 +10,4 @@ class UserDTO {
 }
 
 export default UserDTO;
+

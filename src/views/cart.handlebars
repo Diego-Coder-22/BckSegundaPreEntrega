@@ -5,6 +5,7 @@
             <table class="table">
                 <thead>
                     <tr>
+                        <th scope="col">Id</th>
                         <th scope="col">Producto</th>
                         <th scope="col">Precio Unitario</th>
                         <th scope="col">Cantidad</th>
@@ -13,12 +14,13 @@
                     </tr>
                 </thead>
                 <tbody id="cartList">
-                    {{#each cart.products}}
+                    {{#each Cart.products}}
                     <tr>
-                        <td>{{this.product}}</td>
-                        <td>€{{this.productPrice}}</td> <!-- Acceder al precio del producto en el carrito -->
-                        <td>{{this.productQuantity}}</td> <!-- Acceder a la cantidad del producto en el carrito -->
-                        <td>€{{this.productTotal}}</td> <!-- Acceder al subtotal del producto en el carrito -->
+                        <td>{{this.product._id}}</td>
+                        <td>{{this.product.title}}</td>
+                        <td>€{{this.productPrice}}</td> 
+                        <td>{{this.productQuantity}}</td> 
+                        <td>€{{this.productTotal}}</td> 
                         <td><button class="btn btn-danger delete-btn" data-product-id="{{this._id}}" data-delete-url="http://localhost:8080/api/carts/{{../cid}}/products/{{this._id}}" onclick="deleteProductFromCart('{{../cid}}', '{{this._id}}')">Eliminar producto</button></td>
                     </tr>
                     {{/each}}
@@ -29,10 +31,10 @@
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Resumen del Pedido</h5>
-                    <p class="card-text">Total de Productos: {{cart.products.length}}</p>
-                    <!-- No estoy seguro de dónde viene la variable 'total' en tu código, asegúrate de definirla -->
-                    <p class="card-text">Total a Pagar: €{{cart.total}}</p>
-                    <a href="/api/products/realtimeproducts" class="btn btn-primary">Seguir Comprando</a>
+                    <p class="card-text">Total de Productos: {{Cart.totalProducts}}</p>
+                    <p class="card-text">Total a Pagar: €{{Cart.totalPrice}}</p>
+                    <a href="http://localhost:8080/api/products/" class="btn btn-primary">Seguir Comprando</a>
+                    <a href="http://localhost:8080/api/carts/{{Cart._id}}/purchase" class="btn btn-success" id="purchaseBtn" data-cart-id="{{Cart._id}}">Realizar compra</a>
                 </div>
             </div>
         </div>
