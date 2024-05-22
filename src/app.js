@@ -68,8 +68,6 @@ app.use(session({
 //app.use("/api/carts", cartRouter);
 
 mongoose.connect(MONGO_URL, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
 });
 
 const db = mongoose.connection;

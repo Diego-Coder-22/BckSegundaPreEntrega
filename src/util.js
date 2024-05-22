@@ -8,11 +8,11 @@ const __dirname = dirname(__filename);
 
 dotenv.config({ path: path.resolve(__dirname, './.env') });
 
-export const MONGO_URL = "mongodb+srv://diegocodeidea:uu5qyW7bS4FGpx1I@cluster0.70gqwqq.mongodb.net/";
-export const JWT_SECRET = "tu_secreto_jwt_aqui"; 
-export const CLIENT_ID = "Iv1.87747fbca0bf13f1";
-export const CLIENT_SECRET = "d0dea607ef2be3eaf72d246f3b9b45a3316fe0de";
-export const CALLBACK_URL = "http://localhost:8080/users/githubcallback";
+export const MONGO_URL = process.env.MONGO_URL;
+export const JWT_SECRET = process.env.JWT_SECRET;
+export const CLIENT_ID = process.env.CLIENT_ID;
+export const CLIENT_SECRET = process.env.CLIENT_SECRET;
+export const CALLBACK_URL = process.env.CALLBACK_URL;
 export const EMAIL_USERNAME = process.env.EMAIL_USERNAME;
 export const EMAIL_PASSWORD = process.env.EMAIL_PASSWORD;
 export const TWILIO_SSID = process.env.TWILIO_SSID;
