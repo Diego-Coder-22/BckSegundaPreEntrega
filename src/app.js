@@ -100,14 +100,14 @@ const PORT = 8080;
 
 // Servidor HTTP
 httpServer.listen(PORT, () => {
-    console.log("Servidor conectado!!");
+    console.log("Servidor conectado");
 });
 
 // Servidor WebSocket
 const io = new Server(httpServer);
 
 io.on('connection', socket => {
-    console.log("Nuevo cliente conectado!!");
+    console.log("Nuevo cliente conectado");
 
     socket.on("deleteProduct", (deleteProductId) => {
         console.log("Producto borrado:", deleteProductId);
