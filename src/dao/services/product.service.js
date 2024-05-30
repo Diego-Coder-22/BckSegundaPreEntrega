@@ -1,4 +1,4 @@
-import productRepository from "../Repositories/product.repository.js";
+import productRepository from "../repositories/product.repository.js";
 import ProductDTO from "../DTO/product.dto.js";
 import User from "../Models/user.model.js";
 

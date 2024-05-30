@@ -5,7 +5,6 @@ import Handlebars from "handlebars";
 import handlebars from "express-handlebars";
 import { Server } from "socket.io";
 import bodyParser from "body-parser";
-import __dirname from "./util.js";
 import path from "path";
 import cookieParser from "cookie-parser";
 import session from "express-session";
@@ -13,10 +12,16 @@ import FileStore from "session-file-store";
 import MongoStore from "connect-mongo";
 import cors from "cors";
 import nodemailer from "nodemailer";
+import compression from "express-compression";
+import { fakerES as faker } from "@faker-js/faker";
 import passport from "./config/jwt.js";
 import router from "./routes.js";
 import auth from "./config/auth.js";
 import { MONGO_URL, EMAIL_USERNAME, EMAIL_PASSWORD } from "./util.js";
+import errorHandler from "./errors/errorHandler.js";
+import __dirname from "./util.js";
+import { addLogger } from "./utils/logger-env.js";
+import logger from "./utils/logger.js";
 
 Handlebars.registerHelper('eq', function (a, b, options) {
     return a === b ? options.fn(this) : options.inverse(this);
@@ -49,8 +54,19 @@ app.use(express.json());
 // Middleware para utilizar cookies
 app.use(cookieParser());
 
+// Middleware de errores
+app.use(errorHandler);
+
 // Middleware para usar cors
 app.use(cors()); 
+
+// Middleware para usar compression
+app.use(compression({
+    brotli: {enable: true}
+}));
+
+// Middleware para usar el logger en la app
+app.use(addLogger)
 
 // Middleware para usar el session para autenticaciones de usuarios
 app.use(session({
@@ -68,6 +84,8 @@ app.use(session({
 //app.use("/api/carts", cartRouter);
 
 mongoose.connect(MONGO_URL, {
+    // useNewUrlParser: true,
+    // useUnifiedTopology: true
 });
 
 const db = mongoose.connection;
@@ -95,6 +113,47 @@ app.set("views", __dirname + "/views");
 app.set("view engine", "handlebars");
 app.use(express.static(path.join(__dirname, 'public')));
 app.use("/", router);
+
+// Función para generar productos simulados
+const generateMockProducts = () => {
+    const products = [];
+    for (let i = 0; i < 100; i++) {
+        products.push({
+            _id: new mongoose.Types.ObjectId(),
+            title: faker.commerce.productName(),
+            brand: faker.company.name(),
+            description: faker.commerce.productDescription(),
+            price: faker.commerce.price(),
+            stock: faker.random.numeric(2),
+            category: faker.commerce.department(),
+            image: faker.image.imageUrl()
+        });
+    }
+    return products;
+};
+
+// Endpoint para devolver productos simulados
+app.get("/mockingproducts", (req, res) => {
+    const products = generateMockProducts();
+    res.json(products);
+});
+
+// Endpoint para probar los logs
+app.get("/loggerTest", (req, res) => {
+    try {
+      // Ejemplo de diferentes niveles de logs
+        logger.fatal("Este es un mensaje fatal");
+        logger.error("Este es un mensaje de error");
+        logger.warn("Este es un mensaje de advertencia");
+        logger.info("Este es un mensaje de información");
+        logger.debug("Este es un mensaje de depuración");
+
+        res.status(200).send("Logs probados correctamente");
+    } catch (error) {
+        logger.error("Error al probar los logs:", error);
+        res.status(500).send("Error al probar los logs");
+    }
+});
 
 const PORT = 8080;
 

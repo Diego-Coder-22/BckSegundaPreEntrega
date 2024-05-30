@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import { generateAuthToken } from "../../config/auth.js";
 import passport from "passport";
-import userRepository from "../Repositories/user.repository.js";
+import userRepository from "../repositories/user.repository.js";
 import UserDTO from "../DTO/user.dto.js";
 
 const userService = {
