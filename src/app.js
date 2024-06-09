@@ -17,7 +17,7 @@ import { fakerES as faker } from "@faker-js/faker";
 import passport from "./config/jwt.js";
 import router from "./routes.js";
 import auth from "./config/auth.js";
-import { MONGO_URL, EMAIL_USERNAME, EMAIL_PASSWORD } from "./util.js";
+import { EMAIL_USERNAME, EMAIL_PASSWORD } from "./util.js";
 import errorHandler from "./errors/errorHandler.js";
 import __dirname from "./util.js";
 import { addLogger } from "./utils/logger-env.js";
@@ -44,9 +44,10 @@ const transport = nodemailer.createTransport(dataTransport);
 const fileStore = FileStore(session);
 const app = express();
 const httpServer = http.createServer(app);
+const MONGO_URL = "mongodb+srv://diegocodeidea:1234@cluster0.70gqwqq.mongodb.net/";
 
 // Inicializar Passport
-auth.initializePassport();
+//auth.initializePassport();
 
 // Middleware para analizar el cuerpo de la solicitud JSON
 app.use(express.json());
@@ -60,7 +61,7 @@ app.use(errorHandler);
 // Middleware para usar cors
 app.use(cors()); 
 
-// Middleware para usar compression
+// Middleware para usar compressions
 app.use(compression({
     brotli: {enable: true}
 }));
