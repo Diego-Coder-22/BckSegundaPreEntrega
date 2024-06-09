@@ -14,6 +14,7 @@ import cors from "cors";
 import nodemailer from "nodemailer";
 import compression from "express-compression";
 import { fakerES as faker } from "@faker-js/faker";
+import cluster from "cluster";
 import passport from "./config/jwt.js";
 import router from "./routes.js";
 import auth from "./config/auth.js";
@@ -27,6 +28,9 @@ Handlebars.registerHelper('eq', function (a, b, options) {
     return a === b ? options.fn(this) : options.inverse(this);
 });
 
+console.log("Nodemailer email:", EMAIL_USERNAME);
+console.log("Nodemailer password:", EMAIL_PASSWORD);
+
 // Nodemailer
 const dataTransport = {
     service: "gmail",
@@ -39,7 +43,7 @@ const dataTransport = {
     }
 }
 
-const transport = nodemailer.createTransport(dataTransport);
+export const transport = nodemailer.createTransport(dataTransport);
 
 const fileStore = FileStore(session);
 const app = express();
