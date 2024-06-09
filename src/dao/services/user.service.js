@@ -5,6 +5,7 @@ import passport from "passport";
 import userRepository from "../repositories/user.repository.js";
 import UserDTO from "../DTO/user.dto.js";
 import logger from "../../utils/logger.js";
+
 const userService = {
     getUserById: async (userId) => {
         try {
@@ -17,9 +18,11 @@ const userService = {
             throw new Error("Error al obtener usuario por ID: " + error.message);
         }
     },
+
     getLogin: async () => {
         return "login";
     },
+
     login: async (email, password) => {
         return new Promise((resolve, reject) => {
             passport.authenticate("local", (err, user, info) => {
@@ -34,15 +37,18 @@ const userService = {
                 if (email === "adminCoder@coder.com" && password === "adminCod3er123") {
                     user.role = "admin";
                 }
+
                 const access_token = generateAuthToken(user);
                 logger.info(`User iniciado sesión exitosamente: ${email}`);
                 resolve({ user, access_token });
             })({ body: { email, password } }, {});
         });
     },
+
     getRegister: async () => {
         return "register";
     },
+
     register: async (userData) => {
         const { first_name, last_name, email, age, password } = userData;
         try {
@@ -52,11 +58,13 @@ const userService = {
                 logger.warn(`User ya exite: ${email}`);
                 throw new Error("El usuario ya existe");
             }
+
             const hashedPassword = await bcrypt.hash(password, 10);
             const newUserDTO = new UserDTO(first_name, last_name, email, age, hashedPassword);
             const newUser = { ...newUserDTO };
             const createdUser = await userRepository.createUser(newUser);
             const access_token = generateAuthToken(createdUser);
+
             logger.info(`User registrado: ${email}`);
             return { newUser: createdUser, access_token };
         } catch (error) {
@@ -64,12 +72,15 @@ const userService = {
             throw error;
         }
     },
+
     getGitHub: async () => {
         return passport.authenticate("github", { scope: ["user:email"] });
     },
+
     gitHubCallback: async () => {
         return passport.authenticate("github", { failureRedirect: "/login" });
     },
+
     handleGitHubCallback: async (req) => {
         const user = req.user;
         try {
@@ -82,6 +93,7 @@ const userService = {
             throw new Error("Error interno del servidor");
         }
     },
+
     updateUser: async (userId, updatedUserData) => {
         try {
             logger.info(`Actualizando user: ${userId}`);
@@ -90,9 +102,11 @@ const userService = {
                 logger.warn(`User no encontrado: ${userId}`);
                 throw new Error("El usuario no existe");
             }
+
             existingUser.first_name = updatedUserData.first_name || existingUser.first_name;
             existingUser.last_name = updatedUserData.last_name || existingUser.last_name;
             existingUser.email = updatedUserData.email || existingUser.email;
+
             await existingUser.save();
             logger.info(`User actualizado: ${userId}`);
             return existingUser;
@@ -101,9 +115,11 @@ const userService = {
             throw new Error("Error al actualizar usuario: " + error.message);
         }
     },
+
     getUpdateUser: async () => {
         return "updateUser";
     },
+
     changePassword: async (userId, oldPassword, newPassword) => {
         try {
             logger.info(`Cambiando las contraseña del user: ${userId}`);
@@ -112,13 +128,16 @@ const userService = {
                 logger.warn(`User no encontrado: ${userId}`);
                 throw new Error("El usuario no existe");
             }
+
             const isPasswordValid = await bcrypt.compare(oldPassword, existingUser.password);
             if (!isPasswordValid) {
                 logger.warn(`Contraseña antigua no válida para user: ${userId}`);
                 throw new Error("La contraseña antigua es incorrecta");
             }
+
             const hashedPassword = await bcrypt.hash(newPassword, 10);
             existingUser.password = hashedPassword;
+
             await existingUser.save();
             logger.info(`La contraseña cambió exitosamente para el user: ${userId}`);
             return { message: "Contraseña actualizada correctamente" };
@@ -127,6 +146,7 @@ const userService = {
             throw new Error("Error al cambiar la contraseña: " + error.message);
         }
     },
+
     getChangePassword: async () => {
         return "changePassword";
     },
@@ -162,7 +182,7 @@ const userService = {
 
     updatePassword: async (userId, newPassword) => {
         try {
-            if(!newPassword) {
+            if (!newPassword) {
                 throw new Error("Nueva contraseña requerida")
             }
 
@@ -191,6 +211,24 @@ const userService = {
         return "resetPassword";
     },
 
+    changeUserRole: async (userId, newRole) => {
+        try {
+            const user = await userRepository.findUser(userId);
+            if (!user) {
+                throw new Error("El usuario no existe");
+            }
+            user.role = newRole;
+            await user.save();
+            return user;
+        } catch (error) {
+            throw new Error("Error al cambiar el rol del usuario: " + error.message);
+        }
+    },    
+
+    getChangeUserRole: async () => {
+        return "changeUserRole";
+    },
+
     logOut: async (res, req) => {
         try {
             logger.info(`Logging out user: ${req.session.userId}`);
@@ -206,4 +244,5 @@ const userService = {
         }
     }
 }
+
 export default userService;
