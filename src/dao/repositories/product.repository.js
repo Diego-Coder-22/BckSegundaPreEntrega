@@ -72,7 +72,7 @@ const productRepository = {
 
     getProductById: async (productId) => {
         try {
-            const product = await Product.findById(productId).populate('user').lean();
+            const product = await Product.findById(productId).populate('owner').lean();
             return product;
         } catch (error) {
             throw new Error("Error al obtener el producto por ID: " + error.message);
@@ -168,11 +168,11 @@ const productRepository = {
             if (deleteResult.deletedCount === 0) {
                 throw new Error("Producto no encontrado");
             }
-            return true;
+            return deleteResult.deletedCount > 0;
         } catch (error) {
             throw new Error("Error al eliminar el producto: " + error.message);
         }
-    }
+    }    
 };
 
 export default productRepository;

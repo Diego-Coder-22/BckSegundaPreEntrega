@@ -15,6 +15,8 @@ import nodemailer from "nodemailer";
 import compression from "express-compression";
 import { fakerES as faker } from "@faker-js/faker";
 import cluster from "cluster";
+import swaggerJSDoc from "swagger-jsdoc";
+import swaggerUiExpress from "swagger-ui-express";
 import passport from "./config/jwt.js";
 import router from "./routes.js";
 import auth from "./config/auth.js";
@@ -25,18 +27,38 @@ import { addLogger } from "./utils/logger-env.js";
 import logger from "./utils/logger.js";
 
 // Metodos handlebars para ayudarme en el lado cliente
-Handlebars.registerHelper('eq', function (a, b, options) {
-    return a === b ? options.fn(this) : options.inverse(this);
-});
-
 Handlebars.registerHelper('ifRole', function(role, ...args) {
     const options = args.pop();
-    const roles = args;
+    const roles = args
     return roles.includes(role) ? options.fn(this) : options.inverse(this);
 });
 
-console.log("Nodemailer email:", EMAIL_USERNAME);
-console.log("Nodemailer password:", EMAIL_PASSWORD);
+Handlebars.registerHelper('eq', function (v1, operator, v2, options) {
+    switch (operator) {
+        case '==':
+            return (v1 == v2) ? options.fn(this) : options.inverse(this);
+        case '===':
+            return (v1 === v2) ? options.fn(this) : options.inverse(this);
+        case '!=':
+            return (v1 != v2) ? options.fn(this) : options.inverse(this);
+        case '!==':
+            return (v1 !== v2) ? options.fn(this) : options.inverse(this);
+        case '<':
+            return (v1 < v2) ? options.fn(this) : options.inverse(this);
+        case '<=':
+            return (v1 <= v2) ? options.fn(this) : options.inverse(this);
+        case '>':
+            return (v1 > v2) ? options.fn(this) : options.inverse(this);
+        case '>=':
+            return (v1 >= v2) ? options.fn(this) : options.inverse(this);
+        case '&&':
+            return (v1 && v2) ? options.fn(this) : options.inverse(this);
+        case '||':
+            return (v1 || v2) ? options.fn(this) : options.inverse(this);
+        default:
+            return options.inverse(this);
+    }
+});
 
 // Nodemailer
 const dataTransport = {
@@ -58,7 +80,7 @@ const httpServer = http.createServer(app);
 const MONGO_URL = "mongodb+srv://diegocodeidea:1234@cluster0.70gqwqq.mongodb.net/";
 
 // Inicializar Passport
-//auth.initializePassport();
+auth.initializePassport();
 
 // Middleware para analizar el cuerpo de la solicitud JSON
 app.use(express.json());
@@ -72,7 +94,7 @@ app.use(errorHandler);
 // Middleware para usar cors
 app.use(cors()); 
 
-// Middleware para usar compressions
+// Middleware para usar compression
 app.use(compression({
     brotli: {enable: true}
 }));
@@ -87,8 +109,6 @@ app.use(session({
         ttl: 15,
     }),
     secret: "secret_key",
-    resave: false,
-    saveUninitialized: false,
 }))
 
 // Rutas para productos y carritos
@@ -96,9 +116,25 @@ app.use(session({
 //app.use("/api/carts", cartRouter);
 
 mongoose.connect(MONGO_URL, {
-    // useNewUrlParser: true,
-    // useUnifiedTopology: true
+    useNewUrlParser: true,
+    useUnifiedTopology: true
 });
+
+
+
+const swaggerOptions = {
+    definition: {
+        openapi: "3.0.1",
+        info: {
+            title: "Documentacion del proyecto",
+            description: "API del proyecto"
+        }
+    },
+    apis: [`${__dirname}/docs/**/*.yaml`]
+}
+
+const specs = swaggerJSDoc(swaggerOptions);
+app.use("/apidocs", swaggerUiExpress.serve, swaggerUiExpress.setup(specs));
 
 const db = mongoose.connection;
 

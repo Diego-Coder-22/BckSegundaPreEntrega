@@ -94,14 +94,13 @@ const productController = {
     
         try {
             const product = await productService.getProductDetail(productId);
-            const user = await userService.getUserById(userId)
+            const user = await userService.getUserById(userId);
 
-            if (userRole == 'admin' || (userRole == 'premium' && user == product.owner)) {
-                const updatedProduct = await productService.updateProduct(productId, req, productUpdateData);
+            if (userRole === 'admin' || (userRole === 'premium' && user && user._id.toString() == product.owner._id.toString())) {
+                const updatedProduct = await productService.updateProduct(productId, req, productUpdateData, userId);
 
                 return res.json({ message: "Producto actualizado!", product: updatedProduct });
-            }
-            else{
+            }else{
                 return res.status(403).json({ message: 'No tienes permiso para realizar esta acción' });
             }
         } catch (err) {
@@ -135,14 +134,12 @@ const productController = {
 
         try {
             const product = await productService.getProductDetail(productId);
-            const user = await userService.getUserById(userId)
+            const user = await userService.getUserById(userId);
 
-            if (userRole == 'admin' || (userRole == 'premium' && user == product.owner)) {
+            if (userRole === 'admin' || (userRole === 'premium' && user && user._id.toString() == product.owner._id.toString())) {
                 await productService.deleteProduct(productId);
-
                 return res.json({ message: "Producto eliminado!" });
-            }
-            else{
+            }else{
                 return res.status(403).json({ message: 'No tienes permiso para realizar esta acción' });
             }
         } catch (err) {
