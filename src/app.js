@@ -116,8 +116,6 @@ app.use(session({
 //app.use("/api/carts", cartRouter);
 
 mongoose.connect(MONGO_URL, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
 });
 
 
@@ -130,7 +128,7 @@ const swaggerOptions = {
             description: "API del proyecto"
         }
     },
-    apis: [`${__dirname}/docs/**/*.yaml`]
+    apis: [`${__dirname}../docs/**/*.yaml`]
 }
 
 const specs = swaggerJSDoc(swaggerOptions);
