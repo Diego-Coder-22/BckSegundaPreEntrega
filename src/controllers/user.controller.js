@@ -68,9 +68,10 @@ const userController = {
 
     register: async (req, res, next) => {
         const userData = req.body;
+        const file = req.file;
 
         try {
-            const { newUser, access_token } = await userService.register(userData);
+            const { newUser, access_token } = await userService.register(userData, file);
 
             // Establece la sesión del usuario
             req.session.token = access_token;
@@ -201,8 +202,6 @@ const userController = {
     },
 
     getResetPassword: async (req, res) => {
-        const { token } = req.params;
-
         try {
             const resetPasswordView = await userService.getResetPassword();
             res.render(resetPasswordView);
@@ -263,10 +262,10 @@ const userController = {
 
     changeUserRole: async (req, res) => {
         const userId = req.params.uid;
-        const { newRole } = req.body;
+        const files = req.files;
 
         try {
-            const updatedUser = await userService.changeUserRole(userId, newRole);
+            const updatedUser = await userService.changeUserRole(userId, files);
             res.json(updatedUser);
         } catch (error) {
             console.error("Error al cambiar el rol del usuario:", error);
@@ -286,6 +285,32 @@ const userController = {
         }
     },
 
+    getDocs: async (req, res) => {
+        const userId = req.params.uid;
+
+        try {
+            const user = await userService.getUserById(userId);
+            const uploadDocsView = await userService.getDocs();
+            res.render(uploadDocsView);
+        } catch (error) {
+            console.error("Error al obtener la vista de subida de documentos:", error);
+            res.status(500).json({ error: "Error interno del servidor" });
+        }
+    },
+
+    uploadDocs: async (req, res) => {
+        const userId = req.params.uid;
+        const files = req.files;
+
+        try {
+            const uploadedDocs = await userService.uploadDocs(userId, files);
+            res.json(uploadedDocs);
+        }
+        catch (error) {
+            console.error("Error al subir los documents:", error);
+            res.status(500).json({ error: "Error interno del servidor" });
+        }
+    },
     
     logOut: async (req, res) => {
         try {

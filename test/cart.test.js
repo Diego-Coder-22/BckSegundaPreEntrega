@@ -3,99 +3,89 @@ import { expect } from "chai";
 import supertest from "supertest";
 import mongoose from "mongoose";
 import { MONGO_URL } from "../src/util.js";
-
 const requester = supertest("http://localhost:8080");
-
-let authToken;
-let userId;
-let productId;
-let cartId;
-
-const userCredentials = {
-    email: 'newtest@example.com',
-    password: 'password123'
-};
-
-before(async function () {
-    await mongoose.connect(MONGO_URL);
-
-    const loginResponse = await requester.post("/api/sessions/login").send(userCredentials);
-    expect(loginResponse.statusCode).to.equal(200);
-    console.log("Login exitoso:", loginResponse.body);
-    authToken = loginResponse.body.access_token;
-    userId = loginResponse.body.message._id;
-});
-
-describe("Pruebas para CRUD del carrito", function () {
-    it("Debería obtener la lista de productos y seleccionar uno aleatoriamente", async function () {
-        try {
-            const productsList = await requester.get("/api/products/");
-
-            expect(productsList.statusCode).to.equal(200);
-            console.log("Lista de los productos:", productsList.body);
-
-            // Selecciona un producto aleatorio de la lista
-            const randomProduct = productsList[Math.floor(Math.random() * productsList.length)];
-            productId = randomProduct._id;
-
-            console.log("Producto aleatorio seleccionado:", productId);
-        } catch (error) {
-            console.error("Error durante la solicitud al endpoint:", error);
-            throw error;
-        }
+describe("Cart Tests", function () {
+    const newProductId = "66442a7dac6f88bc4828611b";
+    let cartId;
+    let userId;
+    let userRole;
+    let authToken;
+    let cartMock;
+    let updateProductQuantity;
+    const userCredentials = {
+        email: 'test@example.com',
+        password: 'password123'
+    };
+    before(async function () {
+        // Connect to the database
+        await mongoose.connect(MONGO_URL);
+        // User login
+        const loginResponse = await requester
+            .post("/api/sessions/login")
+            .send(userCredentials);
+        expect(loginResponse.statusCode).to.equal(200);
+        authToken = loginResponse.body.access_token;
+        userId = loginResponse.body.userId;
+        userRole = loginResponse.body.userRole;
+        console.log("Login exitoso:", loginResponse.body);
+        // Initialize cartMock and updateProductQuantity after login
+        cartMock = {
+            productId: "667ccbaeb05b03f8181be1c3",
+            userId: userId,
+            userRole: userRole,
+        };
+        updateProductQuantity = {
+            quantity: 3,
+            userId: userId,
+        };
     });
-
-    it("El endpoint /api/carts/ debe agregar el producto al carrito", async function () {
-        try {
-            const cartMock = {
-                product: productId,
-                user: userId
-            };
-
-            const addProductToCartResponse = await requester
-                .post("/api/carts/")
-                .set('Authorization', `Bearer ${authToken}`)
-                .send(cartMock);
-
-            expect(addProductToCartResponse.statusCode).to.equal(201);
-            console.log("Carrito:", addProductToCartResponse.body);
-            cartId = addProductToCartResponse.body._id; // Guarda el ID del carrito para su uso posterior
-        } catch (error) {
-            console.error("Error durante la solicitud al endpoint:", error);
-            throw error;
-        }
+    describe("Agregado de producto al carrito", () => {
+        it("En el endpoint /api/carts/ deberá agregar el producto del cartMock al carrito y guardar el cartId", async function () {
+            try {
+                const addProductToCartResponse = await requester
+                    .post("/api/carts")
+                    .set('Authorization', `Bearer ${authToken}`)
+                    .send(cartMock);
+                expect(addProductToCartResponse.statusCode).to.equal(200);
+                console.log("Producto en carrito:", addProductToCartResponse.body);
+                cartId = addProductToCartResponse.body.cartItemId;
+            } catch (error) {
+                console.error("Error al agregar el producto al carrito:", error);
+                throw error;
+            }
+        });
     });
-
-    it("El endpoint /api/carts/:cid debe mostrar el carrito creado", async function () {
-        try {
-            const cartResponse = await requester
-                .get(`/api/carts/${cartId}`)
-                .set('Authorization', `Bearer ${authToken}`);
-
-            expect(cartResponse.statusCode).to.equal(200);
-            console.log("El carrito:", cartResponse.body);
-        } catch (error) {
-            console.error("Error durante la solicitud al endpoint:", error);
-            throw error;
-        }
+    describe("Actualización del carrito", () => {
+        it("En el endpoint /api/carts/:cid/products/:pid deberá actualizar la cantidad del producto en el carrito con el updateProductQuantity", async function () {
+            try {
+                const updateProductInCartResponse = await requester
+                    .put(`/api/carts/${cartId}/products/${cartMock.productId}`)
+                    .set('Authorization', `Bearer ${authToken}`)
+                    .send(updateProductQuantity);
+                expect(updateProductInCartResponse.statusCode).to.equal(200);
+                console.log("Cantidad del producto actualizado:", updateProductInCartResponse.body.cart.products);
+            } catch (error) {
+                console.error("Error al actualizar el producto del carrito:", error);
+                throw error;
+            }
+        });
     });
-
-    it("El endpoint /api/carts/:cid debe eliminar el carrito", async function () {
-        try {
-            const deleteCartResponse = await requester
-                .delete(`/api/carts/${cartId}`)
-                .set('Authorization', `Bearer ${authToken}`);
-
-            expect(deleteCartResponse.statusCode).to.equal(200);
-            console.log("Carrito borrado");
-        } catch (error) {
-            console.error("Error durante la solicitud al endpoint:", error);
-            throw error;
-        }
+    describe("Limpieza del carrito", () => {
+        it("En el endpoint /api/carts/:cid deberá limpiar el carrito por completo", async function () {
+            try {
+                const clearCartResponse = await requester
+                    .delete(`/api/carts/${cartId}`)
+                    .set('Authorization', `Bearer ${authToken}`);
+                expect(clearCartResponse.statusCode).to.equal(200);
+                console.log("Carrito vaciado");
+            } catch (error) {
+                console.error("Error al limpiar el carrito:", error);
+                throw error;
+            }
+        })
+    })
+    after(async function () {
+        await mongoose.disconnect();
     });
-});
-
-after(async function () {
-    await mongoose.disconnect();
 });
 */

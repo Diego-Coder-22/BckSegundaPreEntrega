@@ -117,11 +117,11 @@ const cartRepository = {
         }
     },
 
-    updateProductQuantityInCart: async (cartId, productId, quantity) => {
+    updateProductQuantityInCart: async (cartId, productId, parsedQuantity) => {
         try {
             const cart = await Cart.findOneAndUpdate(
                 { _id: cartId, "products.product": productId },
-                { $inc: { "products.$.productQuantity": quantity } },
+                { $inc: { "products.$.productQuantity": parsedQuantity } },
                 { new: true }
             );
             return cart;

@@ -15,7 +15,7 @@ describe("User Tests", function () {
         first_name: 'Test',
         last_name: 'User',
         email: 'test@example.com',
-        age: 30,
+        age: 38,
         password: 'password123',
         role: 'premium'
     };
