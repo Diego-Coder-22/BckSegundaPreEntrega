@@ -109,6 +109,8 @@ app.use(session({
         ttl: 15,
     }),
     secret: "secret_key",
+    resave: false,
+    saveUninitialized: false,
 }))
 
 // Rutas para productos y carritos

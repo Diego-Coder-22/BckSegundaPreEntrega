@@ -8,9 +8,9 @@ const __dirname = dirname(__filename);
 
 dotenv.config({ path: path.resolve(__dirname, './.env') });
 
-export const MONGO_URL = process.env.MONGO_URL;
+export const MONGO_URL = "mongodb+srv://diegocodeidea:1234@cluster0.70gqwqq.mongodb.net/";
 export const JWT_SECRET = process.env.JWT_SECRET;
-export const CLIENT_ID = process.env.CLIENT_ID;
+export const CLIENT_ID = "Iv1.87747fbca0bf13f1";
 export const CLIENT_SECRET = process.env.CLIENT_SECRET;
 export const CALLBACK_URL = process.env.CALLBACK_URL;
 export const EMAIL_USERNAME = process.env.MAIL_USERNAME;
