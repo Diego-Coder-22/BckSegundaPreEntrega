@@ -1,3 +1,24 @@
 <div>
     <h2>Hola {{User.email}}</h2>
 </div>
+
+<div class="container mt-5">
+    <div class="row" id="userList">
+        {{#each users}}
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <img src="/img/{{this.profile}}" class="card-img-top img-fluid" alt="{{this.first_name}}"
+                    style="max-height: 400px; aspect-ratio: 3/2; object-fit: contain;">
+                <div class="card-body">
+                    <p class="card-text">Nombre: {{this.first_name}}</p>
+                    <p class="card-text">Apellido: {{this.last_name}}</p>
+                    <p class="card-text">Email: {{this.email}}</p>
+                    <p class="card-text">Edad: {{this.age}}</p>
+                    <p class="card-text">Rol: {{this.role}}</p>
+                    <p class="card-text">Última vez conectado: {{this.last_connection}}</p>
+                </div>
+            </div>
+        </div>
+        {{/each}}
+    </div>
+</div>
