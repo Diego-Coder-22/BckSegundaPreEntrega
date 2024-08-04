@@ -18,19 +18,18 @@
     {{/eq}}
 </div>
 
-{{#eq user.role "==" "user"}}
+{{#ifRole user.role "user" "premium"}}
 <form action="/api/products/" method="GET" id="cartForm">
     <label for="cart">Filtrar por carrito:</label>
     <select name="cart" id="cart">
         <option value="">Todos los carritos</option>
-        <!-- Aquí iteramos sobre los IDs de los carritos disponibles -->
         {{#each Carts}}
         <option value="{{this._id}}">{{this._id}}</option>
         {{/each}}
     </select>
     <button type="button" id="goToCartBtn">Ir al carrito</button>
 </form>
-{{/eq}}
+{{/ifRole}}
 
 {{#ifRole user.role "admin" "premium"}}
 <div class="container mt-5">
