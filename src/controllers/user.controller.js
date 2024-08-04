@@ -9,7 +9,9 @@ const userController = {
         try {
             const users = await userService.getUsers();
 
-            res.json(users);
+            if (req.accepts("html")) {
+                return res.render("usersList", {Users: users});
+            }
         } catch (error) {
             console.error("Error al obtener la lista de usuarios:", error);
             res.status(500).json({ error: "Error interno del servidor" });
@@ -24,8 +26,10 @@ const userController = {
         try {
             const user = await userService.getUserById(userId);
 
+            const users = await userService.getUsers();
+
             if (req.accepts("html")) {
-                return res.render("user", { User: user, user, isAuthenticated, jwtToken });
+                return res.render("user", { User: user, user, users, isAuthenticated, jwtToken });
             }
         } catch (error) {
             console.error("Error al obtener usuario por ID:", error);
@@ -365,6 +369,10 @@ const userController = {
                 return res.status(404).json({ error: "Usuario no encontrado" });
             }
 
+            if (user.role === "admin") {
+                return res.status(404).json({ error: "No se puede eliminar el administrador" });
+            }
+
             const mailOptions = {
                 to: user.email,
                 from: EMAIL_USERNAME,
@@ -376,10 +384,10 @@ const userController = {
 
             const userId = user._id;
 
-            const deleteUser = await userService.deleteInactiveUser(userId);
+            const deleteInactiveUser = await userService.deleteInactiveUser(userId);
 
-            if (!deleteUser) {
-                return res.status(404).json({ error: "No se ha podido eliminar el usuario" });
+            if (!deleteInactiveUser) {
+                return res.status(404).json({ error: "No se ha podido eliminar el usuario inactivo" });
             }
 
             res.status(200).json({ message: 'Correo de aviso de eliminación de usuario enviado con éxito' });
@@ -388,7 +396,45 @@ const userController = {
             res.status(500).json({ error: "Error interno del servidor" });
         }
     },
-    
+
+    adminChangeUserRole: async (req, res) => {
+        const userId = req.params.uid;
+
+        try {
+            const user = await userService.getUserById(userId);
+
+            const userRole = user.role;
+
+            const changeUserRole = await userService.adminChangeUserRole(user, userRole, userId);
+
+            if (!changeUserRole) {
+                return res.status(404).json({ error: "No se ha podido cambiar el rol del usuario" })
+            }
+
+            res.status(200).json({ message: 'Cambio del rol exitoso' });
+        } catch (error) {
+            console.error("Error al cambiar el rol del usuario:", error);
+            res.status(500).json({ error: "Error interno del servidor" });
+        }
+    },
+
+    deleteUser: async (req, res) => {
+        const userId = req.params.uid;
+
+        try {
+            const deleteUser = await userService.deleteUser(userId);
+
+            if (!deleteUser) {
+                return res.status(404).json({ error: "No se ha podido eliminar el usuario" });
+            }
+
+            res.status(200).json({ message: 'Eliminación del usuario con exito' });
+        } catch (error) {
+            console.error("Error al eliminar el usuario:", error);
+            res.status(500).json({ error: "Error interno del servidor" });
+        }
+    },
+
     logOut: async (req, res) => {
         try {
             await userService.logOut(res, req);

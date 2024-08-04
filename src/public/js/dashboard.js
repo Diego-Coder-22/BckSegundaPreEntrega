@@ -1,4 +1,4 @@
-const socket = io.connect('https://backend-final-production-8834.up.railway.app/');
+const socket = io.connect('http://localhost:8080');
 
 const token = localStorage.getItem("token");
 
@@ -10,8 +10,8 @@ function handleDeleteUser(event) {
 
     const userId = event.target.getAttribute('data-user-id');
 
-    // Realizar la solicitud HTTP DELETE para eliminar el usuario
-    fetch(`https://backend-final-production-8834.up.railway.app/api/sessions/${userId}`, {
+     // Realizar la solicitud HTTP DELETE para eliminar el usuario
+     fetch(`http://localhost:8080/api/sessions/${userId}`, {
         method: 'DELETE',
         headers: {
             'Authorization': `Bearer ${token}`,
@@ -36,7 +36,7 @@ function handleDeleteUser(event) {
 // Agregar un event listener para el evento click en el contenedor userList
 document.getElementById('userList').addEventListener('click', handleDeleteUser);
 
-// Manejar el evento de usuario eliminado desde el servidor
+// Manejar el evento de producto borrado desde el servidor
 socket.on('deleteUser', (deleteUserId) => {
     // Eliminar el usuario de la interfaz
     const userElement = document.querySelector(`[data-user-id="${deleteUserId}"]`);
@@ -56,8 +56,8 @@ function handleChangeUserRole(event) {
 
     const userId = event.target.getAttribute('data-user-id');
 
-    // Realizar la solicitud HTTP PUT para cambiar el rol del usuario
-    fetch(`https://backend-final-production-8834.up.railway.app/api/sessions/changeRole/${userId}`, {
+     // Realizar la solicitud HTTP PUT para eliminar el usuario
+     fetch(`http://localhost:8080/api/sessions/changeRole/${userId}`, {
         method: 'PUT',
         headers: {
             'Authorization': `Bearer ${token}`,
@@ -71,8 +71,8 @@ function handleChangeUserRole(event) {
     })
     .then(data => {
         console.log('Rol editado:', data);
-        // Emitir el evento "changeRole" al servidor con el ID del usuario cuyo rol se cambió
-        socket.emit('changeRole', { userId, user: data });
+        // Emitir el evento "changeRole" al servidor con el ID del rol del usuario a cambiar
+        socket.emit('changeRole', userId);
     })
     .catch(error => {
         console.error('Error al cambiar el rol del usuario:', error);
@@ -82,15 +82,13 @@ function handleChangeUserRole(event) {
 // Agregar un event listener para el evento click en el contenedor userList
 document.getElementById('userList').addEventListener('click', handleChangeUserRole);
 
-// Manejar el evento de rol cambiado desde el servidor
-socket.on('changeRole', ({ userId, user }) => {
-    // Actualizar el rol del usuario en la interfaz
-    const userElement = document.querySelector(`[data-user-id="${userId}"]`);
+// Manejar el evento de producto borrado desde el servidor
+socket.on('changeRole', (changeRoleUserId) => {
+    // Eliminar el usuario de la interfaz
+    const userElement = document.querySelector(`[data-user-id="${changeRoleUserId}"]`);
     if (userElement) {
-        // Actualizar los elementos del usuario con la nueva información
-        userElement.querySelector('.user-role').textContent = user.role;
-        console.log(`Usuario con ID ${userId} rol cambiado`);
+        console.log(`Usuario con ID ${changeRoleUserId} rol cambiado`);
     } else {
-        console.log(`No se encontró el usuario con ID ${userId}`);
+        console.log(`No se encontró el usuario con ID ${changeRoleUserId}`);
     }
 });

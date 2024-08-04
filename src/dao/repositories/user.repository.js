@@ -3,7 +3,8 @@ import User from "../models/user.model.js";
 const userRepository = {
     getUsers: async () => {
         try {
-            const users = await User.find();
+            const users = await User.find().lean();
+
             return users;
         } catch (error) {
             throw new Error("Error al buscar todos los usuarios: " + error.message)
@@ -55,7 +56,7 @@ const userRepository = {
             throw new Error("Error al eliminar el usuario inactivo: " + error.message);
         }
     },
-    
+
     createUser: async (userData) => {
         try {
             const newUser = new User(userData);
@@ -96,6 +97,20 @@ const userRepository = {
         }
     },
     
+    deleteUser: async (userId) => {
+        try {   
+            const deleteUser = await User.findByIdAndDelete({ _id: userId });
+
+            if(!deleteUser) {
+                throw new Error("Usuario no existente"); 
+            }
+
+            return deleteUser;
+        } catch (error) {
+            throw new Error("Error al eliminar el usuario: " + error.message);
+        }
+    },
+
     updateUser: async (userId, updateData) => {
         try {
             const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true });
