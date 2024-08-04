@@ -280,8 +280,35 @@ const userController = {
         const userId = req.params.uid;
 
         try {
-            const changeUserRoleView = await userService.getChangeUserRole();
+            const changeUserRoleView = await userService.getChangePremiumRole();
             res.render(changeUserRoleView, { user, isAuthenticated, jwtToken, userId })
+        } catch (error) {
+            console.error("Error al obtener la vista de cambio de role:", error);
+            res.status(500).json({ error: "Error interno del servidor" });
+        }
+    },
+
+    changeUserRole: async (req, res) => {
+        const userId = req.params.uid;
+
+        try {
+            const updatedUser = await userService.changeUserRole(userId);
+            res.json(updatedUser);
+        } catch (error) {
+            console.error("Error al cambiar el rol del usuario:", error);
+            res.status(500).json({ error: "Error interno del servidor" });
+        }
+    },
+
+    getChangeUserRole: async (req, res) => {
+        const user = req.session.user;
+        const isAuthenticated = req.session.isAuthenticated;
+        const jwtToken = req.session.token;
+        const userId = req.params.uid;
+
+        try {
+            const changePremiumRoleView = await userService.getChangeUserRole();
+            res.render(changePremiumRoleView, { user, isAuthenticated, jwtToken, userId })
         } catch (error) {
             console.error("Error al obtener la vista de cambio de role:", error);
             res.status(500).json({ error: "Error interno del servidor" });
@@ -290,11 +317,13 @@ const userController = {
 
     getUploadDocs: async (req, res) => {
         const userId = req.params.uid;
+        const isAuthenticated = req.session.isAuthenticated;
+        const jwtToken = req.session.token;
 
         try {
             const user = await userService.getUserById(userId);
             const uploadDocsView = await userService.getUplaodDocs();
-            res.render(uploadDocsView, { user });
+            res.render(uploadDocsView, { user, isAuthenticated, jwtToken });
         } catch (error) {
             console.error("Error al obtener la vista de subida de documentos:", error);
             res.status(500).json({ error: "Error interno del servidor" });
