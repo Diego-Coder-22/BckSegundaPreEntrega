@@ -771,3 +771,5 @@
 {"level":"error","message":"Error al buscar el carrito por ID: 66a523e175a799dbd5b68ead para el user: undefined - Error al obtener el carrito por ID: No se encontro el carrito"}
 {"level":"error","message":"Error al buscar el carrito por ID: 66a523e175a799dbd5b68ead para el user: undefined - Error al obtener el carrito por ID: No se encontro el carrito"}
 {"level":"error","message":"Error al buscar el carrito por ID: 66a523e175a799dbd5b68ead para el user: undefined - Error al obtener el carrito por ID: No se encontro el carrito"}
+{"level":"error","message":"Error al encontrar el producto ID: realtimeproducts - Error al obtener el producto por ID: Cast to ObjectId failed for value \"realtimeproducts\" (type string) at path \"_id\" for model \"Product\""}
+{"level":"error","message":"Error al encontrar el producto ID: post - Error al obtener el producto por ID: Cast to ObjectId failed for value \"post\" (type string) at path \"_id\" for model \"Product\""}
