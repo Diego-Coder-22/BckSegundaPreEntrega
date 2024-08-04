@@ -1,16 +1,25 @@
 import crypto from "crypto";
 import nodemailer from "nodemailer";
+import passport from "passport";
 import { EMAIL_USERNAME } from "../util.js";
 import userService from "../dao/services/user.service.js";
 import { transport } from "../app.js";
 
 const userController = {
     getUsers: async (req, res) => {
+        let currentPage = req.query.page || 1;
+        const userId = req.session.userId;
+        const user = req.session.user;
+        const isAuthenticated = req.session.isAuthenticated;
+        const jwtToken = req.session.token;
+        const userRole = req.session.userRole;
+
         try {
-            const users = await userService.getUsers();
+            // Se encarga de traer la lista de usuarios
+            const response = await userService.getUsers(currentPage);
 
             if (req.accepts("html")) {
-                return res.render("usersList", {Users: users});
+                return res.render("usersList", { response, userId, user, isAuthenticated, jwtToken, userRole });
             }
         } catch (error) {
             console.error("Error al obtener la lista de usuarios:", error);
@@ -20,16 +29,18 @@ const userController = {
 
     getUserById: async (req, res) => {
         const userId = req.params.uid;
+        let currentPage = req.query.page || 1;
         const isAuthenticated = req.session.isAuthenticated;
         const jwtToken = req.session.token;
 
         try {
+            // Se en carga de buscar el id del admin y traer la lista de usuarios
             const user = await userService.getUserById(userId);
 
-            const users = await userService.getUsers();
+            const response = await userService.getUsers(currentPage);
 
             if (req.accepts("html")) {
-                return res.render("user", { User: user, user, users, isAuthenticated, jwtToken });
+                return res.render("user", { User: user, user, response, isAuthenticated, jwtToken });
             }
         } catch (error) {
             console.error("Error al obtener usuario por ID:", error);
@@ -107,24 +118,13 @@ const userController = {
         }
     },
 
-    getGitHub: async (req, res) => {
-        try {
-            const githubAuth = await userService.getGitHub();
-            res.redirect(githubAuth);
-        } catch (error) {
-            console.error("Error al obtener la autenticación de GitHub:", error);
-            res.status(500).json({ error: "Error interno del servidor" });
-        }
+    getGitHub: (req, res, next) => {
+        passport.authenticate("github", { scope: ["user:email"] })(req, res, next);
     },
 
-    gitHubCallback: async (req, res, next) => {
-        try {
-            await userService.gitHubCallback()(req, res, next);
-        } catch (error) {
-            console.error("Error en el callback de GitHub:", error);
-            res.status(500).json({ error: "Error interno del servidor" });
-        }
-    },
+    gitHubCallback: (req, res, next) => {
+        passport.authenticate("github", { failureRedirect: "/login" })(req, res, next);
+    },    
 
     handleGitHubCallback: async (req, res) => {
         try {
@@ -151,6 +151,7 @@ const userController = {
         const updatedUserData = req.body;
 
         try {
+            // Se encarga de actualizar el usuario, usando el ID y los datos como parámetros
             const updatedUser = await userService.updateUser(userId, updatedUserData);
             res.json(updatedUser);
         } catch (error) {
@@ -186,6 +187,7 @@ const userController = {
     requestPasswordReset: async (req, res) => {
         const { email } = req.body;
         try {
+            // Busca el usuario por su email y se le envie un mensaje a su email para cambiar la contraseña de la cuenta
             const user = await userService.getUserByEmail(email);
             if (!user) {
                 return res.status(404).json({ error: "Usuario no encontrado" });
@@ -232,6 +234,7 @@ const userController = {
         const userId = req.session.userId;
 
         try {
+            // Busca el reset token del usuario para verificar que se le haya mandado el mensaje y asi autorizar el cambio de contraseña
             const user = await userService.getUserByResetToken(token);
 
             if (!user || user.resetTokenExpires < Date.now()) {
@@ -253,6 +256,7 @@ const userController = {
         const { oldPassword, newPassword } = req.body;
 
         try {
+            // Se encarga cambiar la contraseña del usuario, verificando que la contraseña antigua sea la correcta
             const changedPassword = await userService.changePassword(userId, oldPassword, newPassword);
             res.json(changedPassword);
         }
@@ -280,6 +284,7 @@ const userController = {
         const files = req.files;
 
         try {
+            // Se encarga de cambiar el rol de user a premium
             const updatedPremium = await userService.changePremiumRole(userId, files);
             res.json(updatedPremium);
         } catch (error) {
@@ -307,6 +312,7 @@ const userController = {
         const userId = req.params.uid;
 
         try {
+            // Se encarga de cambiar el rol de premium a user
             const updatedUser = await userService.changeUserRole(userId);
             res.json(updatedUser);
         } catch (error) {
@@ -350,6 +356,7 @@ const userController = {
         const files = req.files;
 
         try {
+            // Se encarga de guardar los documentos que el usuario suba a la plataforma
             const uploadedDocs = await userService.uploadDocs(userId, files);
             res.json(uploadedDocs);
         }
@@ -365,6 +372,7 @@ const userController = {
         const jwtToken = req.session.token;
 
         try {
+            // Trae la lista de los documentos subidos del usuario
             const getDocs = await userService.getDocsByUser(userId);
 
             if (req.accepts('html')) {
@@ -375,19 +383,25 @@ const userController = {
             res.status(500).json({ error: "Error interno del servidor" });
         }
     },
-    
+
     deleteInactiveUser: async (req, res) => {
         try {
-            const inactivityPeriod = 2 * 24 * 60 * 60 * 1000;
+            // Variable para eliminar los usuarios que tengan 2 dias seguidos sin conectarse
+            const inactivityPeriod = 30 * 1000;
 
+            /* Se encarga de buscar a los usuarios que cumplan con el parámetro de inactividad 
+            y enviar el mensaje de usuario eliminado por inactividad */
             const user = await userService.findInactiveUser(inactivityPeriod);
 
-            if (!user) {
-                return res.status(404).json({ error: "Usuario no encontrado" });
+            if (user.role == "admin") {
+                return res.status(404).json({ error: "No se puede eliminar el administrador" });
             }
 
-            if (user.role === "admin") {
-                return res.status(404).json({ error: "No se puede eliminar el administrador" });
+             // Elimina a los usuarios inactivos
+            const deleteInactiveUser = await userService.deleteInactiveUser(user._id);
+
+            if (!deleteInactiveUser) {
+                return res.status(404).json({ error: "No se ha podido eliminar el usuario inactivo" });
             }
 
             const mailOptions = {
@@ -398,14 +412,6 @@ const userController = {
             };
 
             await transport.sendMail(mailOptions);
-
-            const userId = user._id;
-
-            const deleteInactiveUser = await userService.deleteInactiveUser(userId);
-
-            if (!deleteInactiveUser) {
-                return res.status(404).json({ error: "No se ha podido eliminar el usuario inactivo" });
-            }
 
             res.status(200).json({ message: 'Correo de aviso de eliminación de usuario enviado con éxito' });
         } catch (error) {
@@ -418,6 +424,7 @@ const userController = {
         const userId = req.params.uid;
 
         try {
+            // Se encarga de ser una herramienta para el adminstrador para cambiar los roles de los usuarios
             const changeUserRole = await userService.adminChangeUserRole(userId);
 
             if (!changeUserRole) {
@@ -435,6 +442,7 @@ const userController = {
         const userId = req.params.uid;
 
         try {
+            // Se encarga de ser una herramienta para el administrador para borrar el usuario por su ID
             const deleteUser = await userService.deleteUser(userId);
 
             if (!deleteUser) {
@@ -452,7 +460,8 @@ const userController = {
         const userId = req.session.userId;
 
         try {
-           await userService.logOut(res, userId);
+            // Se encarga de cerrar la sesión del usuario
+            await userService.logOut(res, userId);
             req.session.userId = null;
             req.session.user = null;
             req.session.isAuthenticated = false;

@@ -6,9 +6,9 @@ import UserDTO from "../DTO/user.dto.js";
 import logger from "../../utils/logger.js";
 
 const userService = {
-    getUsers: async () => {
+    getUsers: async (currentPage) => {
         try {
-            const users = await userRepository.getUsers();
+            const users = await userRepository.getUsers(currentPage);
             logger.info(`Usuarios encontrados: ${JSON.stringify(users)}`);
             return users;
         } catch (error) {
@@ -21,6 +21,18 @@ const userService = {
         try {
             logger.info(`Buscando user ID: ${userId}`);
             const user = await userRepository.findById(userId, true);
+            logger.info(`User encontrado exitosamente: ${userId}`);
+            return user;
+        } catch (error) {
+            logger.error(`Error al buscar el user ID: ${userId} - ${error.message}`);
+            throw new Error("Error al obtener usuario por ID: " + error.message);
+        }
+    },
+
+    findUser: async(userId) => {
+        try {
+            logger.info(`Buscando user ID: ${userId}`);
+            const user = await userRepository.findUser(userId);
             logger.info(`User encontrado exitosamente: ${userId}`);
             return user;
         } catch (error) {
@@ -92,14 +104,6 @@ const userService = {
             logger.error(`Error al registrar el user: ${email} - ${error.message}`);
             throw error;
         }
-    },
-
-    getGitHub: async () => {
-        return passport.authenticate("github", { scope: ["user:email"] });
-    },
-
-    gitHubCallback: async () => {
-        return passport.authenticate("github", { failureRedirect: "/login" });
     },
 
     handleGitHubCallback: async (req) => {
@@ -184,7 +188,7 @@ const userService = {
 
     savePasswordResetToken: async (userId, resetToken, resetTokenExpires) => {
         try {
-            await userRepository.updateUser(userId, { resetToken, resetTokenExpires });
+            await userRepository.updateUserToken(userId, { resetToken, resetTokenExpires });
         } catch (error) {
             logger.error(`Error al guardar el token de restablecimiento: ${error.message}`);
             throw new Error("Error al guardar el token de restablecimiento: " + error.message);
@@ -194,6 +198,7 @@ const userService = {
     getUserByResetToken: async (token) => {
         try {
             const user = await userRepository.findByResetToken(token);
+            logger.info(`Usuario encontrado: ${user}`);
             return user;
         } catch (error) {
             logger.error(`Error al buscar usuario por token de restablecimiento: ${token} - ${error.message}`);
@@ -208,7 +213,9 @@ const userService = {
             }
 
             const hashedPassword = await bcrypt.hash(newPassword, 10);
-            await userRepository.updateUser(userId, { password: hashedPassword });
+            const updatePassword = await userRepository.updateUserPassword(userId, hashedPassword);
+            logger.info(`Se ha cambiado la contraseña el user: ${userId}`)
+            return updatePassword;
         } catch (error) {
             logger.error(`Error al actualizar la contraseña del usuario: ${userId} - ${error.message}`);
             throw new Error("Error al actualizar la contraseña del usuario: " + error.message);
@@ -217,7 +224,7 @@ const userService = {
 
     clearPasswordResetToken: async (userId) => {
         try {
-            await userRepository.updateUser(userId, { resetToken: null, resetTokenExpires: null });
+            await userRepository.updateUserToken(userId, { resetToken: null, resetTokenExpires: null });
         } catch (error) {
             logger.error(`Error al limpiar el token de restablecimiento del usuario: ${userId} - ${error.message}`);
             throw new Error("Error al limpiar el token de restablecimiento del usuario: " + error.message);
@@ -245,7 +252,7 @@ const userService = {
                     throw new Error("Se requiere la subida de documentación completa para cambiar el rol a premium");
                 }
 
-                                 // Procesar cada archivo de forma individual
+                // Procesar cada archivo de forma individual
                 await userRepository.uploadDocs(userId, files.identificacion);
                 await userRepository.uploadDocs(userId, files.comprobanteDomicilio);
                 await userRepository.uploadDocs(userId, files.comprobanteCuenta);
@@ -323,12 +330,19 @@ const userService = {
             throw new Error("Error interno del servidor");
         }
     },
-    
+
     findInactiveUser: async (inactivityPeriod) => {
         try {
             logger.info("Buscando usuarios inactivos");
             const user = await userRepository.findInactiveUser(inactivityPeriod);
-            logger.info("Usuarios encontrados");
+
+            if (user == null) {
+                logger.info("No se ha encontrado usuarios inactivos");
+            } else if(user.role === "admin") {
+                logger.info("No se puede eliminar el administrador");
+            } else {
+                logger.info(`Usuarios inactivos encontrados: ${user}`);
+            }
             return user;
         } catch (error) {
             logger.error(`Error al buscar el usuario por inactividad: ${error.message}`);
@@ -363,22 +377,24 @@ const userService = {
     adminChangeUserRole: async (userId) => {
         try {
             const user = await userRepository.findUser(userId);
-
+    
             logger.info(`Cambiando rol de usuario ${userId}, con rol ${user.role}`);
-
+    
             if (!user) {
                 throw new Error("El usuario no existe");
             }
-
+    
             if (user.role === "premium") {
                 user.role = "user";
             } else if (user.role === "user") {
                 user.role = "premium";
+            } else if (user.role === "admin") {
+                logger.warn("No se puede cambiar el rol de admin")
             } else {
                 logger.warn("Acceso no autorizado");
             }
-
-             // Guardar los cambios en la base de datos
+    
+            // Guardar los cambios en la base de datos
             await user.save();
             logger.info(`Cambio de rol de usuario exitoso: ${user.role}`);
             return user;
@@ -386,7 +402,7 @@ const userService = {
             logger.error(`Error al cambiar el rol del usuario: ${userId}`);
             throw new Error("Error interno del servidor");
         }
-    },
+    },    
 
     logOut: async (res, userId) => {
         try {

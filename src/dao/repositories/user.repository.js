@@ -1,11 +1,48 @@
 import User from "../models/user.model.js";
 
 const userRepository = {
-    getUsers: async () => {
+    getUsers: async (currentPage) => {
         try {
-            const users = await User.find().lean();
+            const options = {
+                limit: 10,
+                page: currentPage,
+            };
 
-            return users;
+            let dbQuery = {};
+
+            const filter = await User.paginate(dbQuery, options);
+            const users = filter.docs.map(user => user.toObject());
+
+            // Links para las páginas siguientes y anteriores
+            let prevLink = null;
+            if (filter.hasPrevPage) {
+                prevLink = `http://localhost:8080/api/sessions/?page=${filter.prevPage}`;
+            }
+
+            let nextLink = null;
+            if (filter.hasNextPage) {
+                nextLink = `http://localhost:8080/api/sessions/?page=${filter.nextPage}`;
+            }
+
+            const response = {
+                status: 'success',
+                Users: users,
+                query: {
+                    totalDocs: filter.totalDocs,
+                    limit: filter.limit,
+                    totalPages: filter.totalPages,
+                    page: filter.page,
+                    pagingCounter: filter.pagingCounter,
+                    hasPrevPage: filter.hasPrevPage,
+                    hasNextPage: filter.hasNextPage,
+                    prevPage: filter.prevPage,
+                    nextPage: filter.nextPage,
+                    prevLink: prevLink,
+                    nextLink: nextLink
+                },
+            };
+
+            return response;
         } catch (error) {
             throw new Error("Error al buscar todos los usuarios: " + error.message)
         }
@@ -110,7 +147,7 @@ const userRepository = {
             throw new Error("Error buscar los documentos del usuario: " + error.message);
         }
     },
-    
+
     deleteUser: async (userId) => {
         try {   
             const deleteUser = await User.findByIdAndDelete({ _id: userId });
