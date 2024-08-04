@@ -1,5 +1,4 @@
 import bcrypt from "bcrypt";
-import crypto from "crypto";
 import { generateAuthToken } from "../../config/auth.js";
 import passport from "passport";
 import userRepository from "../repositories/user.repository.js";
@@ -7,6 +6,17 @@ import UserDTO from "../DTO/user.dto.js";
 import logger from "../../utils/logger.js";
 
 const userService = {
+    getUsers: async () => {
+        try {
+            const users = await userRepository.getUsers();
+            logger.info(`Usuarios encontrados: ${JSON.stringify(users)}`);
+            return users;
+        } catch (error) {
+            logger.error("Error al obtener la lista de los usuarios:", error);
+            res.status(500).json({ error: "Error interno del servidor" });
+        }
+    },
+
     getUserById: async (userId) => {
         try {
             logger.info(`Buscando user ID: ${userId}`);
@@ -222,7 +232,7 @@ const userService = {
         return "resetPassword";
     },
 
-    changeUserRole: async (userId, files) => {
+    changePremiumRole: async (userId, files) => {
         try {
             const user = await userRepository.findUser(userId);
             if (!user) {
@@ -243,8 +253,35 @@ const userService = {
                 user.role = "premium"
             }
 
-            else if(user.role === "premium") {
+            else if (user.role === "premium") {
                 user.role = "user"
+            }
+
+            // Guardar los cambios en la base de datos
+            await user.save();
+            return user;
+        } catch (error) {
+            throw new Error("Error al cambiar el rol del usuario: " + error.message);
+        }
+    },
+
+    getChangePremiumRole: async () => {
+        return "changePremiumRole";
+    },
+
+    changeUserRole: async (userId) => {
+        try {
+            const user = await userRepository.findUser(userId);
+            if (!user) {
+                throw new Error("El usuario no existe");
+            }
+
+            if (user.role === "premium") {
+                user.role = "user"
+            }
+
+            else {
+                logger.warn("Acceso no autorizado");
             }
 
             // Guardar los cambios en la base de datos
@@ -275,19 +312,79 @@ const userService = {
         }
     },
 
-    logOut: async (res, req) => {
+    findInactiveUser: async (inactivityPeriod) => {
         try {
-            const userId = req.session.userId;
+            logger.info("Buscando usuarios inactivos");
+            const user = await userRepository.findInactiveUser(inactivityPeriod);
+            logger.info("Usuarios encontrados");
+            return user;
+        } catch (error) {
+            logger.error(`Error al buscar el usuario por inactividad: ${error.message}`);
+            throw new Error("Error interno del servidor");
+        }
+    },
+
+    deleteInactiveUser: async (userId) => {
+        try {
+            logger.info(`Eliminando usuario por inactividad: ${userId}`);
+            const deleteInactiveUser = await userRepository.deleteInactiveUser(userId);
+            logger.info("usuario eliminado con exito");
+            return deleteInactiveUser;
+        } catch (error) {
+            logger.error(`Error al buscar el usuario por inactividad: ${error.message}`);
+            throw new Error("Error interno del servidor");
+        }
+    },
+
+    deleteUser: async (userId) => {
+        try {
+            logger.info(`Eliminando usuario: ${userId}`);
+            const deleteUser = await userRepository.deleteUser(userId);
+            logger.info("Usuario eliminado con exito");
+            return deleteUser;
+        } catch (error) {
+            logger.error(`Error al eliminar el usuario: ${error.message}`);
+            throw new Error("Error interno del servidor");
+        }
+    },
+
+    adminChangeUserRole: async (userId) => {
+        try {
+            const user = await userRepository.findUser(userId);
+
+            logger.info(`Cambiando rol de usuario ${userId}, con rol ${user.role}`);
+
+            if (!user) {
+                throw new Error("El usuario no existe");
+            }
+
+            if (user.role === "premium") {
+                user.role = "user";
+            } else if (user.role === "user") {
+                user.role = "premium";
+            } else {
+                logger.warn("Acceso no autorizado");
+            }
+
+             // Guardar los cambios en la base de datos
+            await user.save();
+            logger.info(`Cambio de rol de usuario exitoso: ${user.role}`);
+            return user;
+        } catch (error) {
+            logger.error(`Error al cambiar el rol del usuario: ${userId}`);
+            throw new Error("Error interno del servidor");
+        }
+    },
+
+    logOut: async (res, userId) => {
+        try {
             await userRepository.updateUser(userId, { last_connection: new Date() });
-            logger.info(`Logging out user: ${req.session.userId}`);
-            req.session.userId = null;
-            req.session.user = null;
-            req.session.isAuthenticated = false;
+            logger.info(`Logging out user: ${userId}`);
             res.clearCookie("jwtToken");
-            logger.info(`User logged out exitosamente: ${req.session.userId}`);
+            logger.info(`User logged out exitosamente: ${userId}`);
             return { message: "Logout funciona" };
         } catch (error) {
-            logger.error(`Error logging out user: ${req.session.userId} - ${error.message}`);
+            logger.error(`Error logging out user: ${userId} - ${error.message}`);
             throw new Error("Error interno del servidor");
         }
     }
