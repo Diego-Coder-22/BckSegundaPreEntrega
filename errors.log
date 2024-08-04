@@ -151,3 +151,9 @@
 {"level":"warn","message":"Credenciales de inicio de sesión no válidas para email: test@example.com"}
 {"level":"warn","message":"Credenciales de inicio de sesión no válidas para email: test@example.com"}
 {"level":"error","message":"Error al encontrar el producto ID: realtimeproducts - Error al obtener el producto por ID: Cast to ObjectId failed for value \"realtimeproducts\" (type string) at path \"_id\" for model \"Product\""}
+{"level":"warn","message":"User no logueado: undefined"}
+{"level":"error","message":"Error al agregar el producto al carrito del user: undefined - Usted no esta logueado"}
+{"level":"warn","message":"User no logueado: undefined"}
+{"level":"error","message":"Error al agregar el producto al carrito del user: undefined - Usted no esta logueado"}
+{"level":"error","message":"Error al buscar los mensajes - No se encontraron los mensajes, debido a un error de servidor:Cast to ObjectId failed for value \"saul@gmail.com\" (type string) at path \"_id\" for model \"User\""}
+{"level":"error","message":"Error al buscar los mensajes - No se encontraron los mensajes, debido a un error de servidor:Cast to ObjectId failed for value \"saul@gmail.com\" (type string) at path \"_id\" for model \"User\""}

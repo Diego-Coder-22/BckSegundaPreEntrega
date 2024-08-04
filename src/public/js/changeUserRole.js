@@ -1,3 +1,6 @@
+const token = localStorage.getItem("token");
+const userId = localStorage.getItem("userId");
+
 document.addEventListener("DOMContentLoaded", function() {
     const form = document.getElementById("roleChangeForm");
     const errorMessage = document.getElementById("errorMessage");
