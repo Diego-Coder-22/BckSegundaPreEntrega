@@ -2,7 +2,7 @@ const token = localStorage.getItem("token");
 const userId = localStorage.getItem("userId");
 
 document.addEventListener("DOMContentLoaded", function() {
-    const form = document.getElementById("roleChangeUserForm");
+    const form = document.getElementById("uploadDocsForm");
     const errorMessage = document.getElementById("errorMessage");
 
     form.addEventListener('submit', async function (event) {
@@ -12,23 +12,23 @@ document.addEventListener("DOMContentLoaded", function() {
         const formData = new FormData(form);
 
         try {
-            const response = await fetch(`http://localhost:8080/api/sessions/user/${userId}`, {
+            const response = await fetch(`https://backend-final-production-8834.up.railway.app/api/sessions/${userId}/uploadDocuments`, {
+                method: 'POST',
                 body: formData,
                 headers: {
                     "authorization": `Bearer ${token}`
                 },
-    
             });
 
             if (response.headers.get('Content-Type')?.includes('application/json')) {
                 const result = await response.json();
                 
                 if (response.ok) {
-                    alert("Se ha cambiado el rol del usuario.");
-                    window.location.href = "http://localhost:8080/api/products"; 
+                    alert("Se ha subido los documentos.");
+                    window.location.href = "https://backend-final-production-8834.up.railway.app/api/products"; 
                 } else {
                     errorMessage.style.display = "block";
-                    errorMessage.textContent = result.error || "Ocurrió un error al cambiar el rol del usuario.";
+                    errorMessage.textContent = result.error || "Ocurrió un error al subir los documentos.";
                 }
             } else {
                 throw new Error('Respuesta inesperada del servidor');
@@ -36,7 +36,7 @@ document.addEventListener("DOMContentLoaded", function() {
         } catch (error) {
             console.error("Error enviando el formulario:", error);
             errorMessage.style.display = "block";
-            errorMessage.textContent = "Ocurrió un error al cambiar el rol del usuario.";
+            errorMessage.textContent = "Ocurrió un error al subir los documentos.";
         }
     });
 });

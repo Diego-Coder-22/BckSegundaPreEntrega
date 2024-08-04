@@ -260,20 +260,20 @@ const userController = {
         }
     },
 
-    changeUserRole: async (req, res) => {
+    changePremiumRole: async (req, res) => {
         const userId = req.params.uid;
         const files = req.files;
 
         try {
-            const updatedUser = await userService.changeUserRole(userId, files);
-            res.json(updatedUser);
+            const updatedPremium = await userService.changePremiumRole(userId, files);
+            res.json(updatedPremium);
         } catch (error) {
             console.error("Error al cambiar el rol del usuario:", error);
             res.status(500).json({ error: "Error interno del servidor" });
         }
     },    
 
-    getChangeUserRole: async (req, res) => {
+    getChangePremiumRole: async (req, res) => {
         const user = req.session.user;
         const isAuthenticated = req.session.isAuthenticated;
         const jwtToken = req.session.token;

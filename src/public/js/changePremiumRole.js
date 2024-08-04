@@ -2,7 +2,7 @@ const token = localStorage.getItem("token");
 const userId = localStorage.getItem("userId");
 
 document.addEventListener("DOMContentLoaded", function() {
-    const form = document.getElementById("roleChangeUserForm");
+    const form = document.getElementById("roleChangePremiumForm");
     const errorMessage = document.getElementById("errorMessage");
 
     form.addEventListener('submit', async function (event) {
@@ -12,17 +12,17 @@ document.addEventListener("DOMContentLoaded", function() {
         const formData = new FormData(form);
 
         try {
-            const response = await fetch(`http://localhost:8080/api/sessions/user/${userId}`, {
+            const response = await fetch(`http://localhost:8080/api/sessions/premium/${userId}`, {
+                method: 'PUT',
                 body: formData,
                 headers: {
                     "authorization": `Bearer ${token}`
                 },
-    
             });
 
             if (response.headers.get('Content-Type')?.includes('application/json')) {
                 const result = await response.json();
-                
+
                 if (response.ok) {
                     alert("Se ha cambiado el rol del usuario.");
                     window.location.href = "http://localhost:8080/api/products"; 
