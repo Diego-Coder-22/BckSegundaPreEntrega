@@ -1,6 +1,7 @@
 import Cart from "../models/cart.model.js";
 
 const cartRepository = {
+    // Método para buscar el carrito del usuario por su ID
     findByUserId: async (userId) => {
         try {
             const cart = await Cart.findOne({ user: userId });
@@ -12,6 +13,7 @@ const cartRepository = {
         }
     },
 
+    // Método para mostrar el carrito al usuario según su ID
     getCartById: async (cartId, userId) => {
         try {
             const cart = await Cart.findOne({ _id: cartId, user: userId })
@@ -22,12 +24,17 @@ const cartRepository = {
                 })
                 .lean();
 
+            if (!cart) {
+                throw new Error("No se encontro el carrito");
+            }
+
             return cart;
         } catch (error) {
             throw new Error("Error al obtener el carrito por ID: " + error.message);
         }
     },
 
+    // Método para buscar el carrito del usuario por su ID para handlebars
     getCartByUser: async(userId) => {
         try {
             const cart = await Cart.find({user: userId}).lean();
@@ -42,6 +49,7 @@ const cartRepository = {
         }
     },
 
+    // Método para agregar un producto al carrrito y/o actualizar el carrito con un nuevo producto
     addProductToCart: async (productId, userId, cart, product) => {
         try {
             if (cart) {
@@ -90,6 +98,7 @@ const cartRepository = {
         }
     },
 
+    // Método para crear el carrito
     createCart: async () => {
         try {
             const cart = new Cart({
@@ -104,19 +113,46 @@ const cartRepository = {
         }
     },
 
-    updateCart: async (cartId, products, total) => {
+    // Método para actualizar el carrito con una lista de productos
+    updateCart: async (cartId, userId, newProducts, total) => {
         try {
-            const cart = await Cart.findByIdAndUpdate(
-                cartId,
-                { products: products, total: total },
-                { new: true }
-            );
+            const cart = await Cart.findById(cartId);
+    
+            if (!cart) {
+                throw new Error("No se encontró el carrito");
+            }
+    
+            // Verificar que el userId del carrito coincide con el userId proporcionado
+            if (cart.user.toString() !== userId) {
+                throw new Error("No autorizado para actualizar este carrito");
+            }
+    
+            // Iterar sobre los nuevos productos para actualizar o agregar
+            newProducts.forEach(newProduct => {
+                const existingProduct = cart.products.find(p => p.product.toString() === newProduct.product);
+    
+                if (existingProduct) {
+                    // Si el producto ya existe, actualiza la cantidad y el total
+                    existingProduct.productQuantity += newProduct.productQuantity;
+                    existingProduct.productTotal += newProduct.productTotal;
+                } else {
+                    // Si el producto no existe, añádelo al array
+                    cart.products.push(newProduct);
+                }
+            });
+    
+            // Actualiza el total del carrito
+            cart.total = total;
+    
+            // Guarda el carrito actualizado
+            await cart.save();
             return cart;
         } catch (error) {
             throw new Error("Error al actualizar el carrito: " + error.message);
         }
-    },
+    },    
 
+    // Método para actualizar la cantidad del producto en el carrito
     updateProductQuantityInCart: async (cartId, productId, parsedQuantity) => {
         try {
             const cart = await Cart.findOneAndUpdate(
@@ -128,26 +164,37 @@ const cartRepository = {
         } catch (error) {
             throw new Error("Error al actualizar la cantidad del producto en el carrito: " + error.message);
         }
-    },
+    },    
 
-    deleteProductFromCart: async (cartId, productId) => {
+    // Método para borrar el producto del carrito
+    deleteProductFromCart: async (cartId, userId, productId) => {
         try {
             const cart = await Cart.findOneAndUpdate(
-                { _id: cartId },
-                { $pull: { products: { product: productId } } },
+                { _id: cartId, user: userId },
+                { $pull: { products: { _id: productId } } },
                 { new: true }
             );
+
+            console.log(`Carrito después de eliminar producto: ${JSON.stringify(cart)}`);
+
             return cart;
         } catch (error) {
             throw new Error("Error al eliminar el producto del carrito: " + error.message);
         }
     },
 
+    // Método para vaciar el carrito completo
     clearCart: async (cartId) => {
         try {
             const cart = await Cart.findByIdAndUpdate(
                 cartId,
-                { products: [], total: 0 },
+                {
+                    $set: {
+                        products: [],
+                        stock: 0,
+                        total: 0,
+                    }
+                },
                 { new: true }
             );
             return cart;

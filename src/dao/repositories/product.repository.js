@@ -1,6 +1,7 @@
 import Product from "../models/product.model.js";
 
 const productRepository = {
+    // Método para traer la lista de productos con páginación
     getAllProducts: async (query, currentPage) => {
         try {
             // Paginación
@@ -28,12 +29,12 @@ const productRepository = {
             // Links para las páginas siguientes y anteriores
             let prevLink = null;
             if (filter.hasPrevPage) {
-                prevLink = `http://localhost:8080/api/products?page=${filter.prevPage}`;
+                prevLink = `/api/products?page=${filter.prevPage}`;
             }
 
             let nextLink = null;
             if (filter.hasNextPage) {
-                nextLink = `http://localhost:8080/api/products?page=${filter.nextPage}`;
+                nextLink = `/api/products?page=${filter.nextPage}`;
             }
 
             const response = {
@@ -60,6 +61,7 @@ const productRepository = {
         }
     },
 
+    // Método para encontrar el producto por su ID
     findProductById: async (productId) => {
         try {
             const product = await Product.findById(productId);
@@ -70,6 +72,7 @@ const productRepository = {
         }
     },
 
+    // Método para mostrar el producto en handlebars
     getProductById: async (productId) => {
         try {
             const product = await Product.findById(productId).populate('owner').lean();
@@ -79,6 +82,7 @@ const productRepository = {
         }
     },
 
+    // Método para obtener el producto del carrito
     getProductForCart: async (productId) => {
         try {
             const product = await Product.findById(productId);
@@ -88,6 +92,7 @@ const productRepository = {
         }
     },
 
+    // Método para traer la lista de productos según su categoria y con páginación
     getProductsByCategory: async (category, query, currentPage) => {
         try {
             // Paginación
@@ -111,12 +116,12 @@ const productRepository = {
             // Links para las páginas siguientes y anteriores
             let prevLink = null;
             if (filter.hasPrevPage) {
-                prevLink = `http://localhost:8080/api/products/${category}?page=${filter.prevPage}`;
+                prevLink = `/api/products/${category}?page=${filter.prevPage}`;
             }
 
             let nextLink = null;
             if (filter.hasNextPage) {
-                nextLink = `http://localhost:8080/api/products/${category}?page=${filter.nextPage}`;
+                nextLink = `/api/products/${category}?page=${filter.nextPage}`;
             }
 
             const response = {
@@ -143,6 +148,7 @@ const productRepository = {
         }
     },
 
+    // Método para crear productos
     createProduct: async (productData) => {
         try {
             const newProduct = new Product(productData);
@@ -153,15 +159,21 @@ const productRepository = {
         }
     },
 
-    updateProduct: async (productId, updatedProductData) => {
+    // Método para actualizar el producto según su ID
+    updateProduct: async (productId, updateData) => {
         try {
-            const updatedProduct = await Product.findByIdAndUpdate(productId, { $set: updatedProductData }, { new: true });
+            const updatedProduct = await Product.findByIdAndUpdate(
+                productId,
+                { $set: updateData },
+                { new: true }
+            );
             return updatedProduct;
         } catch (error) {
             throw new Error("Error al actualizar el producto: " + error.message);
         }
-    },    
+    },     
 
+    // Método para borrar el producto por su ID
     deleteProductById: async (productId) => {
         try {
             const deleteResult = await Product.deleteOne({ _id: productId });

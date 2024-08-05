@@ -1,17 +1,16 @@
 import crypto from "crypto";
 import nodemailer from "nodemailer";
 import passport from "passport";
-import { EMAIL_USERNAME } from "../util.js";
+import { EMAIL_USERNAME, transport } from "../util.js";
 import userService from "../dao/services/user.service.js";
-import { transport } from "../app.js";
 
 const userController = {
     getUsers: async (req, res) => {
         let currentPage = req.query.page || 1;
-        const userId = req.user._id;
-        const user = req.user;
-        const jwtToken = req.user.access_token;
-        const userRole = req.user.role;
+        const userId = req.session.userId;
+        const user = req.session.user;
+        const jwtToken = req.session.token;
+        const userRole = req.session.userRole;
 
         try {
             // Se encarga de traer la lista de usuarios
@@ -29,8 +28,8 @@ const userController = {
     getUserById: async (req, res) => {
         const userId = req.params.uid;
         let currentPage = req.query.page || 1;
-        const isAuthenticated = req.user;
-        const jwtToken = req.user.access_token;
+        const isAuthenticated = req.session;
+        const jwtToken = req.session.token;
 
         try {
             // Se en carga de buscar el id del admin y traer la lista de usuarios
@@ -63,14 +62,12 @@ const userController = {
         try {
             const { user, access_token } = await userService.login(email, password);
 
-           /* Antes lo utilice para setear el usuario, pero es innecesario
+            // Establece la sesión del usuario
             req.session.token = access_token;
             req.session.userId = user._id;
             req.session.user = user;
             req.session.isAuthenticated = true;
             req.session.userRole = user.role;
-
-            */
 
             console.log("Datos del login:", user, "token:", access_token);
 
@@ -100,14 +97,12 @@ const userController = {
         try {
             const { newUser, access_token } = await userService.register(userData, file);
 
-            /*
             // Establece la sesión del usuario
             req.session.token = access_token;
             req.session.userId = newUser._id;
             req.session.user = newUser;
             req.session.isAuthenticated = true;
             req.session.userRole = newUser.role;
-            */
 
             console.log("Datos del registro:", newUser, "token:", access_token);
 
@@ -124,7 +119,7 @@ const userController = {
     getGitHub: (req, res, next) => {
         passport.authenticate("github", { scope: ["user:email"] })(req, res, next);
     },
-
+    
     gitHubCallback: (req, res, next) => {
         passport.authenticate("github", { failureRedirect: "/login" })(req, res, next);
     },    
@@ -133,14 +128,12 @@ const userController = {
         try {
             const { user, access_token } = await userService.handleGitHubCallback(req);
 
-            /*
             // Establece la sesión del usuario
             req.session.token = access_token;
             req.session.userId = user._id;
             req.session.user = user;
             req.session.isAuthenticated = true;
             req.session.userRole = user.role;
-            */
 
             res.cookie("jwtToken", access_token, {
                 httpOnly: true,
@@ -166,8 +159,8 @@ const userController = {
     },
 
     getUpdateUser: async (req, res) => {
-        const user = req.user;
-        const jwtToken = req.user.access_token;
+        const user = req.session.user;
+        const jwtToken = req.session.token;
 
         try {
             const updateUserView = await userService.getUpdateUser();
@@ -235,7 +228,6 @@ const userController = {
     resetPassword: async (req, res) => {
         const { token } = req.params;
         const { newPassword } = req.body;
-        const userId = req.user._id;
 
         try {
             // Busca el reset token del usuario para verificar que se le haya mandado el mensaje y asi autorizar el cambio de contraseña
@@ -245,8 +237,8 @@ const userController = {
                 return res.status(400).json({ error: "Token de restablecimiento inválido o expirado" });
             }
 
-            await userService.updatePassword(userId, newPassword);
-            await userService.clearPasswordResetToken(userId);
+            await userService.updatePassword(user._id, newPassword);
+            await userService.clearPasswordResetToken(user._id);
 
             res.status(200).json({ message: "Contraseña restablecida con éxito" });
         } catch (error) {
@@ -271,8 +263,8 @@ const userController = {
     },
 
     getChangePassword: async (req, res) => {
-        const isAuthenticated = req.user;
-        const jwtToken = req.user.access_token;
+        const isAuthenticated = req.session;
+        const jwtToken = req.session.token;
 
         try {
             const changePasswordView = await userService.getChangePassword();
@@ -286,7 +278,7 @@ const userController = {
     changePremiumRole: async (req, res) => {
         const userId = req.params.uid;
         const files = req.files;
-
+    
         try {
             // Se encarga de cambiar el rol de user a premium
             const updatedPremium = await userService.changePremiumRole(userId, files);
@@ -296,11 +288,11 @@ const userController = {
             res.status(500).json({ error: "Error interno del servidor" });
         }
     },    
-
+    
     getChangePremiumRole: async (req, res) => {
         const userId = req.params.uid;
-        const user = req.user;
-        const jwtToken = req.user.access_token;
+        const user = req.session.user;
+        const jwtToken = req.session.token;
 
         try {
             const changeUserRoleView = await userService.getChangePremiumRole();
@@ -325,7 +317,7 @@ const userController = {
     },
 
     getChangeUserRole: async (req, res) => {
-        const user = req.session.user;
+        const user = req.session.user.user;
         const isAuthenticated = req.session.isAuthenticated;
         const jwtToken = req.session.token;
         const userId = req.params.uid;
@@ -338,11 +330,11 @@ const userController = {
             res.status(500).json({ error: "Error interno del servidor" });
         }
     },
-
+    
     getUploadDocs: async (req, res) => {
         const userId = req.params.uid;
-        const isAuthenticated = req.user;
-        const jwtToken = req.user.access_token;
+        const isAuthenticated = req.session;
+        const jwtToken = req.session.token;
 
         try {
             const user = await userService.getUserById(userId);
@@ -368,11 +360,11 @@ const userController = {
             res.status(500).json({ error: "Error interno del servidor" });
         }
     },
-    
+
     getDocsByUser: async (req, res) => {
         const userId = req.params.uid;
-        const isAuthenticated = req.user;
-        const jwtToken = req.user.access_token;
+        const isAuthenticated = req.session;
+        const jwtToken = req.session.token;
 
         try {
             // Trae la lista de los documentos subidos del usuario
@@ -400,7 +392,7 @@ const userController = {
                 return res.status(404).json({ error: "No se puede eliminar el administrador" });
             }
 
-             // Elimina a los usuarios inactivos
+            // Elimina a los usuarios inactivos
             const deleteInactiveUser = await userService.deleteInactiveUser(user._id);
 
             if (!deleteInactiveUser) {
@@ -460,7 +452,7 @@ const userController = {
     },
 
     logOut: async (req, res) => {
-        const userId = req.user._id;
+        const userId = req.session.userId;
 
         try {
             // Se encarga de cerrar la sesión del usuario

@@ -11,7 +11,6 @@ import session from "express-session";
 import FileStore from "session-file-store";
 import MongoStore from "connect-mongo";
 import cors from "cors";
-import nodemailer from "nodemailer";
 import compression from "express-compression";
 import { fakerES as faker } from "@faker-js/faker";
 import cluster from "cluster";
@@ -25,6 +24,7 @@ import errorHandler from "./errors/errorHandler.js";
 import __dirname from "./util.js";
 import { addLogger } from "./utils/logger-env.js";
 import logger from "./utils/logger.js";
+import { PORT } from "./util.js";
 
 // Metodos handlebars para ayudarme en el lado cliente
 Handlebars.registerHelper('ifRole', function(role, ...args) {
@@ -60,20 +60,6 @@ Handlebars.registerHelper('eq', function (v1, operator, v2, options) {
     }
 });
 
-// Nodemailer
-const dataTransport = {
-    service: "gmail",
-    host: "smtp.gmail.com",
-    secure: false,
-    port: 587,
-    auth: {
-        user: EMAIL_USERNAME,
-        pass: EMAIL_PASSWORD
-    }
-}
-
-export const transport = nodemailer.createTransport(dataTransport);
-
 const fileStore = FileStore(session);
 const app = express();
 const httpServer = http.createServer(app);
@@ -106,7 +92,7 @@ app.use(addLogger)
 app.use(session({
     store: MongoStore.create({
         mongoUrl: MONGO_URL,
-        ttl: 15,
+        ttl: 3600,
     }),
     secret: "secret_key",
     resave: false,
@@ -119,8 +105,6 @@ app.use(session({
 
 mongoose.connect(MONGO_URL, {
 });
-
-
 
 const swaggerOptions = {
     definition: {
@@ -202,8 +186,6 @@ app.get("/loggerTest", (req, res) => {
         res.status(500).send("Error al probar los logs");
     }
 });
-
-const PORT = 8080;
 
 // Servidor HTTP
 httpServer.listen(PORT, () => {

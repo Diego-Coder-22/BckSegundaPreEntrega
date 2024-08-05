@@ -2,16 +2,17 @@ import messageService from "../dao/services/message.service.js";
 
 const messageController = {
     getMessages: async (req, res) => {
-        const user = req.user;
-        const jwtToken = req.user.access_token;
-        const userRole = req.user.role;
+        const user = req.session.user;
+        const jwtToken = req.session.token;
+        const userRole = req.session.userRole;
+        const isAuthenticated = req.session.isAuthenticated;
 
         try {
             // Obtiene todos los mensajes de los usuarios
             const messages = await messageService.getMessages()
 
             if (req.accepts('html')) {
-                return res.render('chat', { messages, user, jwtToken, userRole });
+                return res.render('chat', { messages, user, jwtToken, userRole, isAuthenticated });
             }
             res.json(messages);
         } catch (err) {

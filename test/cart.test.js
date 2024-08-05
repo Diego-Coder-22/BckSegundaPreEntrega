@@ -1,91 +1,159 @@
-/*
 import { expect } from "chai";
 import supertest from "supertest";
 import mongoose from "mongoose";
 import { MONGO_URL } from "../src/util.js";
+
 const requester = supertest("http://localhost:8080");
+
 describe("Cart Tests", function () {
-    const newProductId = "66442a7dac6f88bc4828611b";
-    let cartId;
+    let user;
     let userId;
     let userRole;
     let authToken;
     let cartMock;
-    let updateProductQuantity;
+    let updateCartMock;
+    let updateQuantityProductMock;
+    let cartId;
+
     const userCredentials = {
         email: 'test@example.com',
         password: 'password123'
     };
+
     before(async function () {
-        // Connect to the database
         await mongoose.connect(MONGO_URL);
-        // User login
+
         const loginResponse = await requester
             .post("/api/sessions/login")
             .send(userCredentials);
+
         expect(loginResponse.statusCode).to.equal(200);
+        user = loginResponse.body;
+        userId = loginResponse.body.message._id;
+        userRole = loginResponse.body.message.role;
         authToken = loginResponse.body.access_token;
-        userId = loginResponse.body.userId;
-        userRole = loginResponse.body.userRole;
         console.log("Login exitoso:", loginResponse.body);
-        // Initialize cartMock and updateProductQuantity after login
+        console.log("UserId: ", userId);
+
         cartMock = {
-            productId: "667ccbaeb05b03f8181be1c3",
+            productId: "6605c09597c65615bdd87f72",
             userId: userId,
             userRole: userRole,
         };
-        updateProductQuantity = {
+
+        updateQuantityProductMock = {
             quantity: 3,
             userId: userId,
         };
+
+        updateCartMock = {
+                userId: userId,
+                products: [
+                    {
+                        "product": "6605c09597c65615bdd87f72",
+                        "productQuantity": 2,
+                        "productPrice": 99,
+                        "productPrice": 198
+                    },
+                    {
+                        "product": "6605b1c4ea51f11ea6f87eb4",
+                        "productQuantity": 3,
+                        "productPrice": 89,
+                        "productTotal": 267
+                    }
+                ],
+                "total": 465
+            }
     });
-    describe("Agregado de producto al carrito", () => {
-        it("En el endpoint /api/carts/ deberá agregar el producto del cartMock al carrito y guardar el cartId", async function () {
+
+    describe("Prueba de agregar el producto al carrito del usuario", () => {
+        it("El endpoint /api/carts/ debera de agregar el cartMock al carrito", async function () {
             try {
-                const addProductToCartResponse = await requester
-                    .post("/api/carts")
+                const addProductToCart = await requester
+                    .post("/api/carts/")
                     .set('Authorization', `Bearer ${authToken}`)
                     .send(cartMock);
-                expect(addProductToCartResponse.statusCode).to.equal(200);
-                console.log("Producto en carrito:", addProductToCartResponse.body);
-                cartId = addProductToCartResponse.body.cartItemId;
+
+                expect(addProductToCart.statusCode).to.equal(200);
+                console.log("Producto en carrito:", addProductToCart.body);
+                cartId = addProductToCart.body.cartItemId;
             } catch (error) {
-                console.error("Error al agregar el producto al carrito:", error);
+                console.log("Error al agregar el producto al carrito", error.response ? error.response.body : error);
                 throw error;
             }
         });
     });
-    describe("Actualización del carrito", () => {
-        it("En el endpoint /api/carts/:cid/products/:pid deberá actualizar la cantidad del producto en el carrito con el updateProductQuantity", async function () {
+
+    describe("Prueba de agregado de más cantidad al producto en el carrito", () => {
+        it("El endpoint /api/carts/:cid/products/:pid", async function () {
             try {
-                const updateProductInCartResponse = await requester
+                const updateProductQuantityInCart = await requester
                     .put(`/api/carts/${cartId}/products/${cartMock.productId}`)
                     .set('Authorization', `Bearer ${authToken}`)
-                    .send(updateProductQuantity);
-                expect(updateProductInCartResponse.statusCode).to.equal(200);
-                console.log("Cantidad del producto actualizado:", updateProductInCartResponse.body.cart.products);
+                    .send(updateQuantityProductMock);
+
+                expect(updateProductQuantityInCart.statusCode).to.equal(200);
+                console.log("Producto en el carrito actualizado:", updateProductQuantityInCart.body);
             } catch (error) {
-                console.error("Error al actualizar el producto del carrito:", error);
-                throw error;
-            }
-        });
-    });
-    describe("Limpieza del carrito", () => {
-        it("En el endpoint /api/carts/:cid deberá limpiar el carrito por completo", async function () {
-            try {
-                const clearCartResponse = await requester
-                    .delete(`/api/carts/${cartId}`)
-                    .set('Authorization', `Bearer ${authToken}`);
-                expect(clearCartResponse.statusCode).to.equal(200);
-                console.log("Carrito vaciado");
-            } catch (error) {
-                console.error("Error al limpiar el carrito:", error);
+                console.log("Error al actualizar el producto del carrito", error.response ? error.response.body : error);
                 throw error;
             }
         })
     })
+
+    describe("Prueba de agregado de otros productos al carrito", () => {
+        it("El endpoint /api/carts/:cid debera de agregar un listado de nuevos productos al carrito", async function () {
+            try {
+                const updateCart = await requester
+                    .put(`/api/carts/${cartId}`)
+                    .set('Authorization', `Bearer ${authToken}`)
+                    .send(updateCartMock);
+
+                console.log("En caso de error al actualizar el carrito:", updateCart.body);
+                expect(updateCart.statusCode).to.equal(200);
+                console.log("Carrito actualizado:", updateCart.body.products);
+            } catch (error) {
+                console.log("Error al actualizar el carrito", error.response ? error.response.body : error);
+                throw error;
+            }
+        });
+    });
+
+    describe("Prueba de eliminación del producto del carrito", () => {
+        it("El endpoint /api/carts/:cid/products/:pid debera de eliminar el producto del carrito", async function () {
+            try {   
+                const deleteProductInCart = await requester
+                    .delete(`/api/carts/${cartId}/products/${cartMock.productId}`)
+                    .set('Authorization', `Bearer ${authToken}`)
+                    .send(userId);
+
+                expect(deleteProductInCart.statusCode).to.equal(200);
+                console.log("Eliminación del producto:", deleteProductInCart.body);
+            } catch (error) {
+                console.log("Error al eliminar el producto del carrito", error.response ? error.response.body : error);
+                throw error;
+            }
+        });
+    });
+
+    describe("Prueba de eliminación del carrito", () => {
+        it("El endpoint /api/carts/:cid debera de eliminar el carrito", async function () {
+            try {
+                const deleteCart = await requester
+                    .delete(`/api/carts/${cartId}`)
+                    .set('Authorization', `Bearer ${authToken}`)
+                    .send(userId);
+                
+                expect(deleteCart.statusCode).to.equal(200);
+                console.log("Eliminación del carrito exitosa:", deleteCart.body);
+            } catch (error) {
+                console.log("Error el carrito", error.response ? error.response.body : error);
+                throw error;
+            }
+        });
+    });
+    
     after(async function () {
         await mongoose.disconnect();
     });
 });
-*/

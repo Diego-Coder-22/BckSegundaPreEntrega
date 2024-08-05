@@ -33,9 +33,9 @@ const initializePassport = () => {
         "github",
         new GitHubStrategy(
             {
-                clientID: CLIENT_ID,
-                clientSecret: CLIENT_SECRET,
-                callbackURL: CALLBACK_URL,
+                clientID: process.env.CLIENT_ID || CLIENT_ID,
+                clientSecret: process.env.CLIENT_SECRET || CLIENT_SECRET,
+                callbackURL: process.env.CALLBACK_URL || CALLBACK_URL,
             },
             async (accessToken, refreshToken, profile, done) => {
                 try {
@@ -50,7 +50,7 @@ const initializePassport = () => {
                         const newUser = {
                             first_name: profile._json.name,
                             last_name: "",
-                            age: 37,
+                            age: 20,
                             email: profile._json.email,
                             password: "",
                         };
@@ -176,6 +176,7 @@ export const isAll = (req, res, next) => {
         return res.status(403).json({ error: 'Acceso no autorizado' });
     }
 }
+
 const auth = {
     initializePassport,
 };

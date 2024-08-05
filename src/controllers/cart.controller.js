@@ -3,16 +3,17 @@ import cartService from "../dao/services/cart.service.js";
 const cartController = {
     getCartById: async (req, res) => {
         const cartId = req.params.cid;
-        const userId = req.user._id;
-        const user = req.user;
-        const jwtToken = req.user.access_token;
+        const user = req.session.user;
+        const userId = req.session.userId;
+        const jwtToken = req.session.token;
+        const isAuthenticated = req.session.isAuthenticated;
 
         try {
-            // Buscar el cart segun el id del usuario y del carrito si es que ya tiene uno
+            // Buscar el cart segund el id del usuario y del carrito si es que ya tiene uno
             const cart = await cartService.getCartById(cartId, userId);
 
             if (req.accepts("html")) {
-                return res.render("cart", { cid: cart._id, Cart: cart, user, jwtToken });
+                return res.render("cart", { cid: cart._id, Cart: cart, user, jwtToken, isAuthenticated });
             }
 
             return res.json(cart);
@@ -23,9 +24,7 @@ const cartController = {
     },
 
     addProductToCart: async (req, res) => {
-        const userId = req.user._id;
-        const userRole = req.user.role;
-        const { productId } = req.body;
+        const { productId, userId, userRole } = req.body;
 
         try {
             // Agregar el producto al carrito del usuario
@@ -40,19 +39,19 @@ const cartController = {
 
     updateCart: async (req, res) => {
         const cartId = req.params.cid;
-        const { products, userId } = req.body;
-
+        const { products, userId, total } = req.body;
+    
         try {
             // Actualiza el carrito según los productos que se guarden
-            const cart = await cartService.updateCart(cartId, userId, products);
-
+            const cart = await cartService.updateCart(cartId, userId, products, total);
+    
             return res.json(cart);
         } catch (error) {
             console.error("Error al actualizar el carrito:", error);
             return res.status(500).json({ error: "Error en la base de datos", details: error.message });
         }
     },
-
+    
     purchaseCart: async (req, res) => {
         const cartId = req.params.cid;
         const cartData = req.body;
@@ -70,14 +69,15 @@ const cartController = {
 
     getPurchaseCart: async (req, res) => {
         const cartId = req.params.cid;
-        const userId = req.user._id;
-        const user = req.user;
-        const jwtToken = req.user.access_token;
+        const userId = req.session.userId;
+        const user = req.session.user;
+        const jwtToken = req.session.token;
+        const isAuthenticated = req.session.isAuthenticated;
 
         try {
             const cart = await cartService.getCartById(cartId, userId)
             const purchaseCartView = await cartService.getPurchaseCart();
-            res.render(purchaseCartView, { user, jwtToken, Cart: cart })
+            res.render(purchaseCartView, { user, jwtToken, Cart: cart, isAuthenticated })
         } catch (error) {
 
         }
@@ -85,23 +85,22 @@ const cartController = {
 
     updateProductQuantityInCart: async (req, res) => {
         const { cid, pid } = req.params;
-        const userId = req.user._id;
-        const { quantity } = req.body;
-
+        const { quantity, userId } = req.body;
+    
         try {
             // Actualiza la cantidad del producto que se encuentra dentro del cart
             const cart = await cartService.updateProductQuantityInCart(cid, userId, pid, quantity);
-
+    
             if (!cart) {
                 return res.status(404).json({ error: "Carrito no encontrado" });
             }
-            
+    
             return res.json({ message: "Cantidad del producto en el carrito actualizada correctamente", cart });
         } catch (error) {
             console.error("Error al actualizar la cantidad del producto en el carrito:", error);
             return res.status(500).json({ error: "Error en la base de datos", details: error.message });
         }
-    },
+    },    
 
     deleteProductFromCart: async (req, res) => {
         const { cid, pid } = req.params;
