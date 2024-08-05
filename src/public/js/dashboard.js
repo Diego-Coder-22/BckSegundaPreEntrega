@@ -1,4 +1,4 @@
-const socket = io.connect('http://localhost:8080');
+const socket = io.connect('https://bcksegundapreentrega-production.up.railway.app/');
 
 const token = localStorage.getItem("token");
 
@@ -10,8 +10,8 @@ function handleDeleteUser(event) {
 
     const userId = event.target.getAttribute('data-user-id');
 
-      // Realizar la solicitud HTTP DELETE para eliminar el usuario
-    fetch(`http://localhost:8080/api/sessions/${userId}`, {
+    // Realizar la solicitud HTTP DELETE para eliminar el usuario
+    fetch(`https://bcksegundapreentrega-production.up.railway.app/api/sessions/${userId}`, {
         method: 'DELETE',
         headers: {
             'Authorization': `Bearer ${token}`,
@@ -57,7 +57,7 @@ function handleChangeUserRole(event) {
     const userId = event.target.getAttribute('data-user-id');
 
     // Realizar la solicitud HTTP PUT para cambiar el rol del usuario
-    fetch(`http://localhost:8080/api/sessions/changeRole/${userId}`, {
+    fetch(`https://bcksegundapreentrega-production.up.railway.app/api/sessions/changeRole/${userId}`, {
         method: 'PUT',
         headers: {
             'Authorization': `Bearer ${token}`,

@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const expired_date = document.getElementById("expired_date").value;
 
         try {
-            const response = await fetch(`http://localhost:8080/api/carts/${cartId}/purchase`, {
+            const response = await fetch(`https://bcksegundapreentrega-production.up.railway.app/api/carts/${cartId}/purchase`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -47,14 +47,14 @@ document.addEventListener("DOMContentLoaded", () => {
                     <p><strong>Productos:</strong></p>
                     <ul>
                         ${data.ticket.products.map(product => `
-                            <li>${product.product} - Cantidad: ${product.productQuantity} - Total: $${product.productTotal}</li>
+                            <li>${product.product} - Cantidad: ${product.productQuantity} - Total: €${product.productTotal}</li>
                         `).join('')}
                     </ul>
                 `,
                 icon: 'success',
                 confirmButtonText: 'Aceptar'
             }).then(() => {
-                window.location.href = "http://localhost:8080/api/products/";
+                window.location.href = "https://bcksegundapreentrega-production.up.railway.app/api/products/";
             });
         } catch (error) {
             Swal.fire({

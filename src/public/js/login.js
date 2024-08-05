@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function () {
             formData.forEach((val, key) => obj[key]=val);
             const errorMessage = document.getElementById('errorMessage');
 
-            fetch('http://localhost:8080/api/sessions/login', {
+            fetch('https://bcksegundapreentrega-production.up.railway.app/api/sessions/login', {
                 method: 'POST',
                 body: JSON.stringify(obj),
                 headers: {
@@ -46,10 +46,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.log("Inicio de sesión exitoso!");
 
                 if (userRole === 'admin') {
-                    window.location.href = `http://localhost:8080/api/sessions/dashboard/${userId}`;
+                    window.location.href = `https://bcksegundapreentrega-production.up.railway.app//api/sessions/dashboard/${userId}`;
                 }
                 else {
-                    window.location.href = "http://localhost:8080/api/products";
+                    window.location.href = "https://bcksegundapreentrega-production.up.railway.app/api/products";
                 }
             })
             .catch(error => {
@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const errorMessage = document.getElementById('errorMessage');
 
-            fetch('http://localhost:8080/api/sessions/github', {
+            fetch('https://bcksegundapreentrega-production.up.railway.app/api/sessions/github', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json' 
@@ -90,9 +90,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Extraer el token de la respuesta JSON
                 // Almacenar el token en el almacenamiento local
                 const token = localStorage.setItem('token', data.access_token);
+                const userId = localStorage.setItem('userId', data.userId);
+                const userRole = localStorage.setItem('userRole', data.userRole);
                 console.log("Token:", token);
+                console.log("UserId:", userId);
+                console.log("UserRole:", userRole);
                 console.log("Inicio de sesión exitoso!");
-                window.location.href = "http://localhost:8080/api/products/"
+                window.location.href = "https://bcksegundapreentrega-production.up.railway.app/api/products/"
             })
             .catch(error => {
                 console.error('Error en el inicio de sesión:', error);

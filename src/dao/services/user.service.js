@@ -56,7 +56,7 @@ const userService = {
                     logger.warn(`Credenciales de inicio de sesión no válidas para email: ${email}`);
                     return reject(new Error("Credenciales inválidas"));
                 }
-                if (email === "adminCoder@coder.com" && password === "adminCod3er123") {
+                if (email === "admin@coder.com" && password === "admin123") {
                     user.role = "admin";
                 }
 

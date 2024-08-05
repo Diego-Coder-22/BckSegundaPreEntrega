@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const newPassword = document.getElementById("newPassword").value;
 
         try {
-            const response = await fetch(`http://localhost:8080/api/sessions/changePassword/${userId}`, {
+            const response = await fetch(`https://bcksegundapreentrega-production.up.railway.app/api/sessions/changePassword/${userId}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             // La contraseña se cambió exitosamente, redirigir a otra página o mostrar un mensaje de éxito
-            window.location.href = "http://localhost:8080/api/products/";
+            window.location.href = "https://bcksegundapreentrega-production.up.railway.app/api/products/";
         } catch (error) {
             errorMessage.textContent = error.message;
             errorMessage.style.display = "block";

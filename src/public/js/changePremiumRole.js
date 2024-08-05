@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const formData = new FormData(form);
 
         try {
-            const response = await fetch(`http://localhost:8080/api/sessions/premium/${userId}`, {
+            const response = await fetch(`https://bcksegundapreentrega-production.up.railway.app/api/sessions/premium/${userId}`, {
                 method: 'PUT',
                 body: formData,
                 headers: {
@@ -22,10 +22,10 @@ document.addEventListener("DOMContentLoaded", function() {
 
             if (response.headers.get('Content-Type')?.includes('application/json')) {
                 const result = await response.json();
-
+                
                 if (response.ok) {
                     alert("Se ha cambiado el rol del usuario.");
-                    window.location.href = "http://localhost:8080/api/products"; 
+                    window.location.href = "https://bcksegundapreentrega-production.up.railway.app/api/sessions/login"; 
                 } else {
                     errorMessage.style.display = "block";
                     errorMessage.textContent = result.error || "Ocurrió un error al cambiar el rol del usuario.";

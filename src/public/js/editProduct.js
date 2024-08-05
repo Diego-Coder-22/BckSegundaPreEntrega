@@ -1,5 +1,6 @@
 const token = localStorage.getItem('token');
 const userId = localStorage.getItem('userId');
+const userRole = localStorage.getItem('userRole');
 
 document.addEventListener("DOMContentLoaded", () => {
     const editProductForm = document.getElementById("editProductForm");
@@ -9,22 +10,16 @@ document.addEventListener("DOMContentLoaded", () => {
     editProductForm.addEventListener("submit", async (event) => {
         event.preventDefault();
 
-        const title = document.getElementById("title").value;
-        const brand = document.getElementById("brand").value;
-        const description = document.getElementById("description").value;
-        const price = document.getElementById("price").value;
-        const stock = document.getElementById("stock").value;
-        const category = document.getElementById("category").value;
-        const image = document.getElementById("image").value;
+        const form = document.getElementById('editProductForm');
+        const formData = new FormData(form);
 
         try {
-            const response = await fetch(`http://localhost:8080/api/products/${productId}`, {
+            const response = await fetch(`https://bcksegundapreentrega-production.up.railway.app/api/products/${productId}`, {
                 method: "PUT",
                 headers: {
-                    "Content-Type": "application/json",
                     "authorization": `Bearer ${token}`
                 },
-                body: JSON.stringify({ title, brand, description, price, stock, category, image, userId }),
+                body: formData,
             });
 
             const data = await response.json();
@@ -34,7 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             // El perfil se editó exitosamente, redirigir a otra página o mostrar un mensaje de éxito
-            window.location.href = "http://localhost:8080/api/products/";
+            window.location.href = "https://bcksegundapreentrega-production.up.railway.app/api/products/";
         } catch (error) {
             errorMessage.textContent = error.message;
             errorMessage.style.display = "block";

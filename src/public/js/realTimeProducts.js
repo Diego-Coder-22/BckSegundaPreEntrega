@@ -1,14 +1,8 @@
-const socket = io.connect('http://localhost:8080');
+const socket = io.connect('https://bcksegundapreentrega-production.up.railway.app/');
 
 const token = localStorage.getItem("token");
 const userId = localStorage.getItem("userId");
 const userRole = localStorage.getItem("userRole");
-
-if (userId && userRole === "admin" || userRole === "premium") {
-    document.getElementById('userId').value = userId;
-}
-
-console.log("Token:", token);
 
 function handleAddToCart(event) {
     if (!event.target.classList.contains('cart-btn')) {
@@ -17,24 +11,24 @@ function handleAddToCart(event) {
 
     if (!token) {
         console.log("Usuario no logueado o registrado");
-        window.location.href = "http://localhost:8080/api/sessions/login"
+        window.location.href = "https://bcksegundapreentrega-production.up.railway.app/api/sessions/login"
     }
 
     if (userRole === "admin") {
         alert("Usted es el administrador");
-        window.location.href = "http://localhost:8080/api/sessions/login"
+        window.location.href = "https://bcksegundapreentrega-production.up.railway.app/api/sessions/login"
     }
 
     const productId = event.target.getAttribute('data-product-id');
 
     // Realizar una solicitud HTTP POST para agregar el producto al carrito
-    fetch("http://localhost:8080/api/carts/", {
+    fetch("https://bcksegundapreentrega-production.up.railway.app/api/carts/", {
         method: 'POST',
         headers: {
             "authorization": `Bearer ${token}`,
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ productId })
+        body: JSON.stringify({ productId, userId, userRole })
     })
         .then(response => {
             if (!response.ok) {
@@ -59,7 +53,7 @@ if (userRole === "user" || userRole === "premium") {
         // Obtener el valor seleccionado en el select
         const selectedCartId = document.getElementById('cart').value;
         // Construir la URL del carrito utilizando el ID seleccionado
-        const cartUrl = `http://localhost:8080/api/carts/${selectedCartId}`;
+        const cartUrl = `https://bcksegundapreentrega-production.up.railway.app/api/carts/${selectedCartId}`;
 
         // Obtener el token de localStorage
         const token = localStorage.getItem('token');
@@ -75,8 +69,8 @@ if (userRole === "user" || userRole === "premium") {
         fetch(cartUrl, {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${token}`
-            }
+                'Authorization': `Bearer ${token}`,
+            },
         })
             .then(response => {
                 // Verificar si la respuesta es exitosa
@@ -106,33 +100,33 @@ async function renderProducts(products) {
     productElement.classList.add('col-md-4', 'mb-4');
     productElement.innerHTML = `
         <div class="card">
-        <img src="/img/${products.image}" class="card-img-top img-fluid" alt="{{this.title}}"
-        style="max-height: 400px; aspect-ratio: 3/2; object-fit: contain;">
-    <div class="card-body">
-        <h5 class="card-title">${products.title}}</h5>
-        <p class="card-text">${products.brand}</p>
-        <p class="card-text">${products.description}</p>
-        <p class="card-text">Precio: ${products.price}</p>
-        <p class="card-text">Stock: ${products.stock}</p>
-        <p class="card-text">Categoría: ${products.category}</p>
-        <a href="http://localhost:8080/api/products/{{this._id}}" class="btn btn-primary">Ver detalles</a>
-        {{#eq ../user.role "==" "admin"}}
-        <button class="btn btn-danger delete-btn" data-product-id="{{this._id}}">Eliminar Producto</button>
-        <a href="http://localhost:8080/api/products/updateProduct/{{this._id}}" class="btn btn-warning">Editar Producto</a>
-        {{/eq}}
-        {{#eq ../user.role "==" "premium"}}
-        {{#eq ../user._id "==" this.owner}}
-        <button class="btn btn-danger delete-btn" data-product-id="{{this._id}}">Eliminar Producto</button>
-        <a href="http://localhost:8080/api/products/updateProduct/{{this._id}}" class="btn btn-warning">Editar Producto</a>
-        {{/eq}}
-        {{/eq}}
-        {{#ifRole ../user.role "user" "premium"}}
-        {{#eq ../user._id "!=" this.owner}}
-        <button class="btn btn-success cart-btn" data-product-id="{{this._id}}">Agregar al carrito</button>
-        {{/eq}}
-        {{/ifRole}}
-    </div>
-</div>`;
+                <img src="/img/${products.image}" class="card-img-top img-fluid" alt="{{this.title}}"
+                    style="max-height: 400px; aspect-ratio: 3/2; object-fit: contain;">
+                <div class="card-body">
+                    <h5 class="card-title">${products.title}}</h5>
+                    <p class="card-text">${products.brand}</p>
+                    <p class="card-text">${products.description}</p>
+                    <p class="card-text">Precio: ${products.price}</p>
+                    <p class="card-text">Stock: ${products.stock}</p>
+                    <p class="card-text">Categoría: ${products.category}</p>
+                    <a href="https://bcksegundapreentrega-production.up.railway.app/api/products/{{this._id}}" class="btn btn-primary">Ver detalles</a>
+                    {{#eq ../user.role "==" "admin"}}
+                    <button class="btn btn-danger delete-btn" data-product-id="{{this._id}}">Eliminar Producto</button>
+                    <a href="https://bcksegundapreentrega-production.up.railway.app/api/products/updateProduct/{{this._id}}" class="btn btn-warning">Editar Producto</a>
+                    {{/eq}}
+                    {{#eq ../user.role "==" "premium"}}
+                    {{#eq ../user._id "==" this.owner}}
+                    <button class="btn btn-danger delete-btn" data-product-id="{{this._id}}">Eliminar Producto</button>
+                    <a href="https://bcksegundapreentrega-production.up.railway.app/updateProduct/{{this._id}}" class="btn btn-warning">Editar Producto</a>
+                    {{/eq}}
+                    {{/eq}}
+                    {{#ifRole ../user.role "user" "premium"}}
+                    {{#eq ../user._id "!=" this.owner}}
+                    <button class="btn btn-success cart-btn" data-product-id="{{this._id}}">Agregar al carrito</button>
+                    {{/eq}}
+                    {{/ifRole}}
+                </div>
+            </div>`;
     productList.appendChild(productElement);
 }
 
@@ -140,36 +134,35 @@ socket.on('addProduct', (addProduct) => {
     renderProducts(addProduct);
 });
 
-if (userRole === "admin" || "premium") {
+if (userRole === "admin" || userRole === "premium") {
     // Manejar el envío del formulario para agregar un producto
-    document.getElementById('addProductForm').addEventListener('submit', async (event) => {
-        event.preventDefault();
-
-        // Obtener los valores del formulario
-        const formData = new FormData(event.target);
-
+    document.getElementById('addProductForm').addEventListener('submit', async function(event) {
+        event.preventDefault(); 
+    
+        const form = document.getElementById('addProductForm');
+        const formData = new FormData(form);
+    
         try {
-            const response = await fetch('http://localhost:8080/api/products/', {
+            const response = await fetch('/api/products/', {
                 method: 'POST',
-                body: formData,
                 headers: {
-                    "authorization": `Bearer ${token}`,
+                    'Authorization': `Bearer ${token}`,
                 },
+                body: formData
             });
-
+    
             if (!response.ok) {
-                throw new Error('Error al agregar el producto');
+                const errorData = await response.json();
+                console.error('Error:', errorData);
+                alert('Error al agregar el producto. Por favor, verifica los datos e inténtalo de nuevo.');
+            } else {
+                const responseData = await response.json();
+                console.log('Success:', responseData);
+                alert('Producto agregado exitosamente');
             }
-
-            const data = await response.json();
-            socket.emit("addProduct", data.Product);
-            console.log('Producto agregado:', data.Product);
-
-            // Limpiar el formulario después de agregar el producto
-            event.target.reset();
-
         } catch (error) {
-            console.error('Error al agregar el producto:', error);
+            console.error('Error de red:', error);
+            alert('Hubo un problema con la solicitud. Por favor, intenta de nuevo.');
         }
     });
 
@@ -181,27 +174,29 @@ if (userRole === "admin" || "premium") {
 
         const productId = event.target.getAttribute('data-product-id');
 
-         // Realizar la solicitud HTTP DELETE para eliminar el producto
-        fetch(`http://localhost:8080/api/products/${productId}`, {
+        // Realizar la solicitud HTTP DELETE para eliminar el producto
+        fetch(`https://bcksegundapreentrega-production.up.railway.app/api/products/${productId}`, {
             method: 'DELETE',
             headers: {
-                'Authorization': `Bearer ${token}`,
-            }
+                'Content-Type': 'application/json',
+                "authorization": `Bearer ${token}`,
+            },
+            body: JSON.stringify({ userId, userRole })
         })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Error al eliminar el producto');
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log('Producto eliminado:', data);
-            // Emitir el evento "deleteProduct" al servidor con el ID del producto a eliminar
-            socket.emit('deleteProduct', productId, userId);
-        })
-        .catch(error => {
-            console.error('Error al eliminar el producto:', error);
-        });
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al eliminar el producto');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Producto eliminado:', data);
+                // Emitir el evento "deleteProduct" al servidor con el ID del producto a eliminar
+                socket.emit('deleteProduct', productId);
+            })
+            .catch(error => {
+                console.error('Error al eliminar el producto:', error);
+            });
     }
 
     // Agregar un event listener para el evento click en el contenedor productList

@@ -9,18 +9,18 @@ document.addEventListener("DOMContentLoaded", () => {
     editUserForm.addEventListener("submit", async (event) => {
         event.preventDefault();
 
-        const firstName = document.getElementById("firstName").value;
-        const lastName = document.getElementById("lastName").value;
+        const first_name = document.getElementById("firstName").value;
+        const last_name = document.getElementById("lastName").value;
         const email = document.getElementById("email").value;
 
         try {
-            const response = await fetch(`http://localhost:8080/api/sessions/updateUser/${userId}`, {
+            const response = await fetch(`https://bcksegundapreentrega-production.up.railway.app/api/sessions/updateUser/${userId}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
                     "authorization": `Bearer ${token}`
                 },
-                body: JSON.stringify({ firstName, lastName, email }),
+                body: JSON.stringify({ first_name, last_name, email }),
             });
 
             const data = await response.json();
@@ -30,7 +30,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             // El perfil se editó exitosamente, redirigir a otra página o mostrar un mensaje de éxito
-            window.location.href = "http://localhost:8080/api/products/";
+            window.location.href = "https://bcksegundapreentrega-production.up.railway.app/api/products/";
         } catch (error) {
             errorMessage.textContent = error.message;
             errorMessage.style.display = "block";
