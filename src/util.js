@@ -11,7 +11,7 @@ dotenv.config({ path: path.resolve(__dirname, './.env') });
 
 export const PORT = process.env.PORT || 8080;
 export const MONGO_URL = "mongodb+srv://diegocodeidea:1234@cluster0.70gqwqq.mongodb.net/";
-export const JWT_SECRET = process.env.JWT_SECRET;
+export const JWT_SECRET = process.env.jwtSecret;
 export const CLIENT_ID = process.env.clientId;
 export const CLIENT_SECRET = process.env.clientSecret;
 export const CALLBACK_URL = process.env.CALLBACK_URL;
