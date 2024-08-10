@@ -19,7 +19,7 @@ import swaggerUiExpress from "swagger-ui-express";
 import passport from "./config/jwt.js";
 import router from "./routes.js";
 import auth from "./config/auth.js";
-import { EMAIL_USERNAME, EMAIL_PASSWORD } from "./util.js";
+import { MONGO_URL, EMAIL_USERNAME, EMAIL_PASSWORD } from "./util.js";
 import errorHandler from "./errors/errorHandler.js";
 import __dirname from "./util.js";
 import { addLogger } from "./utils/logger-env.js";
@@ -29,7 +29,7 @@ import { PORT } from "./util.js";
 // Metodos handlebars para ayudarme en el lado cliente
 Handlebars.registerHelper('ifRole', function(role, ...args) {
     const options = args.pop();
-    const roles = args
+    const roles = args;
     return roles.includes(role) ? options.fn(this) : options.inverse(this);
 });
 
@@ -99,11 +99,13 @@ app.use(session({
     saveUninitialized: false,
 }))
 
-// Rutas para productos y carritos
+// Rutas para productos y carritos json
 //app.use("/api/products", productRouter);
 //app.use("/api/carts", cartRouter);
 
 mongoose.connect(MONGO_URL, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
 });
 
 const swaggerOptions = {
@@ -114,7 +116,7 @@ const swaggerOptions = {
             description: "API del proyecto"
         }
     },
-    apis: [`${__dirname}../docs/**/*.yaml`]
+    apis: [`${__dirname}/docs/**/*.yaml`]
 }
 
 const specs = swaggerJSDoc(swaggerOptions);
@@ -174,29 +176,29 @@ app.get("/mockingproducts", (req, res) => {
 app.get("/loggerTest", (req, res) => {
     try {
       // Ejemplo de diferentes niveles de logs
-        logger.fatal("Este es un mensaje fatal");
-        logger.error("Este es un mensaje de error");
-        logger.warn("Este es un mensaje de advertencia");
-        logger.info("Este es un mensaje de información");
-        logger.debug("Este es un mensaje de depuración");
-
-        res.status(200).send("Logs probados correctamente");
+      logger.fatal("Este es un mensaje fatal");
+      logger.error("Este es un mensaje de error");
+      logger.warn("Este es un mensaje de advertencia");
+      logger.info("Este es un mensaje de información");
+      logger.debug("Este es un mensaje de depuración");
+  
+      res.status(200).send("Logs probados correctamente");
     } catch (error) {
-        logger.error("Error al probar los logs:", error);
-        res.status(500).send("Error al probar los logs");
+      logger.error("Error al probar los logs:", error);
+      res.status(500).send("Error al probar los logs");
     }
 });
 
 // Servidor HTTP
 httpServer.listen(PORT, () => {
-    console.log("Servidor conectado");
+    console.log("Servidor conectado!!");
 });
 
 // Servidor WebSocket
 const io = new Server(httpServer);
 
 io.on('connection', socket => {
-    console.log("Nuevo cliente conectado");
+    console.log("Nuevo cliente conectado!!");
 
     socket.on("deleteProduct", (deleteProductId) => {
         console.log("Producto borrado:", deleteProductId);
@@ -231,5 +233,5 @@ io.on('connection', socket => {
     socket.on("changeRole", (changeRoleUserId) => {
         console.log("Cambio de rol usuario", changeRoleUserId);
         io.emit("changeRole", changeRoleUserId);
-    })
+    });
 });
