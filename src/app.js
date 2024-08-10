@@ -63,6 +63,7 @@ Handlebars.registerHelper('eq', function (v1, operator, v2, options) {
 const fileStore = FileStore(session);
 const app = express();
 const httpServer = http.createServer(app);
+const MONGO_URL = "mongodb+srv://diegocodeidea:1234@cluster0.70gqwqq.mongodb.net/";
 
 // Inicializar Passport
 auth.initializePassport();
@@ -90,7 +91,7 @@ app.use(addLogger)
 // Middleware para usar el session para autenticaciones de usuarios
 app.use(session({
     store: MongoStore.create({
-        mongoUrl: MONGO_URL,
+        mongoUrl: "mongodb+srv://diegocodeidea:1234@cluster0.70gqwqq.mongodb.net/",
         ttl: 3600,
     }),
     secret: "secret_key",
