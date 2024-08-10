@@ -45,3 +45,5 @@ const strategy = new JwtStrategy(jwtOptions, (jwt_payload, next) => {
 
 passport.use(strategyExtractor);
 passport.use(strategy);
+
+export default passport;
